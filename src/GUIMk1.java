@@ -59,7 +59,7 @@ public class GUIMk1 {
             Color foreground = g.getColor();
 
             g.setColor(Color.BLACK);
-            g.drawString("Add a rectangle by doing mouse press, drag and release!", 40, 15);
+
 
             for (DrawingArea.ColoredRectangle cr : coloredRectangles) {
                 g.setColor(cr.getForeground());
