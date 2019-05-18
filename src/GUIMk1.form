@@ -9,6 +9,12 @@
       <background color="-1116161"/>
     </properties>
     <border type="none"/>
-    <children/>
+    <children>
+      <vspacer id="67850">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
+    </children>
   </grid>
 </form>
