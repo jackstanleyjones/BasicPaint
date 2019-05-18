@@ -22,9 +22,12 @@ public class GUIMk1 {
 
     public static void createGUI(){
         DrawingArea drawingArea = new DrawingArea();
+        ToolSelect utiltyBar = new ToolSelect();
         JFrame.setDefaultLookAndFeelDecorated(true);
         JFrame frame = new JFrame("GUIMk1");
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+        frame.getContentPane().add(utiltyBar);
+
         frame.getContentPane().add(drawingArea);
         frame.setSize(400, 420);
         frame.setLocationRelativeTo( null );
@@ -32,12 +35,22 @@ public class GUIMk1 {
     }
 
     static class ToolSelect extends JPanel{
-        JRadioButton plot;
+        JRadioButton plot = new JRadioButton("plot");
         JRadioButton line;
         JRadioButton rectangle;
         JRadioButton ellipse;
         JRadioButton polygon;
-        JToolBar toolSelect;
+
+        public void ToolSelect(){
+            JToolBar toolSelectBar = new JToolBar();
+            toolSelectBar.add(plot);
+            toolSelectBar.add(line);
+            toolSelectBar.add(rectangle);
+            toolSelectBar.add(ellipse);
+            toolSelectBar.add(polygon);
+        }
+
+
 
     }
 
