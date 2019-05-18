@@ -7,6 +7,7 @@ import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 
 public class GUIMk1 {
+    JPanel panel1;
     private boolean draw = false;
     private Point myPoint;
 
@@ -25,9 +26,19 @@ public class GUIMk1 {
         JFrame frame = new JFrame("GUIMk1");
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
         frame.getContentPane().add(drawingArea);
-        frame.setSize(400, 400);
+        frame.setSize(400, 420);
         frame.setLocationRelativeTo( null );
         frame.setVisible(true);
+    }
+
+    static class ToolSelect extends JPanel{
+        JRadioButton plot;
+        JRadioButton line;
+        JRadioButton rectangle;
+        JRadioButton ellipse;
+        JRadioButton polygon;
+        JToolBar toolSelect;
+
     }
 
     static class DrawingArea extends JPanel {
