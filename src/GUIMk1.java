@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
+import javax.tools.Tool;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public class GUIMk1 {
     }
 
     static class ToolSelect extends JPanel implements ActionListener{
-        public static String toolSelction;
+        public static String toolSelction = "plot";
         public ButtonGroup toolGroup = new ButtonGroup();
 
         private DrawingArea drawingArea;
@@ -70,8 +71,8 @@ public class GUIMk1 {
         }
 
 
-        public String GetTool(){
-            return this.toolSelction;
+        public static String GetTool(){
+            return toolSelction;
         }
 
 
@@ -105,7 +106,7 @@ public class GUIMk1 {
         }
 
         @Override
-        protected void paintComponent(Graphics g) {
+        public void paintComponent(Graphics g) {
             super.paintComponent(g);
 
             //  Custom code to paint all the Rectangles from the List
@@ -114,29 +115,33 @@ public class GUIMk1 {
 
             g.setColor(Color.BLACK);
 
-
-            for (DrawingArea.ColoredRectangle cr : coloredRectangles) {
-                g.setColor(cr.getForeground());
-                Rectangle r = cr.getRectangle();
-                g.drawRect(r.x, r.y, r.width, r.height);
-            }
+            if(ToolSelect.GetTool() == "rectangle") {
+                for (DrawingArea.ColoredRectangle cr : coloredRectangles) {
+                    g.setColor(cr.getForeground());
+                    Rectangle r = cr.getRectangle();
+                    g.drawRect(r.x, r.y, r.width, r.height);
+                }
 
             //  Paint the Rectangle as the mouse is being dragged
 
-            if (shape != null) {
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setColor(foreground);
-                g2d.draw(shape);
+                if (shape != null) {
+                    Graphics2D g2d = (Graphics2D) g;
+                    g2d.setColor(foreground);
+                    g2d.draw(shape);
+                }
             }
         }
 
         public void addRectangle(Rectangle rectangle, Color color) {
             //  Add the Rectangle to the List so it can be repainted
-
-            ColoredRectangle cr = new ColoredRectangle(color, rectangle);
-            coloredRectangles.add(cr);
-            repaint();
+            if(ToolSelect.GetTool() == "rectangle") {
+                ColoredRectangle cr = new ColoredRectangle(color, rectangle);
+                coloredRectangles.add(cr);
+                repaint();
+            }
         }
+
+
 
         public void clear() {
             coloredRectangles.clear();
