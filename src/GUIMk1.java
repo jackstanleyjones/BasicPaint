@@ -22,36 +22,33 @@ public class GUIMk1 {
 
     public static void createGUI(){
         DrawingArea drawingArea = new DrawingArea();
-        ToolSelect utiltyBar = new ToolSelect();
+        JToolBar utiltyBar = new JToolBar(JToolBar.VERTICAL);
+        utiltyBar.add(ToolSelect.plot);
+        utiltyBar.add(ToolSelect.line);
+        utiltyBar.add(ToolSelect.rectangle);
+        utiltyBar.add(ToolSelect.ellipse);
+        utiltyBar.add(ToolSelect.polygon);
+
         JFrame.setDefaultLookAndFeelDecorated(true);
         JFrame frame = new JFrame("GUIMk1");
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-        frame.getContentPane().add(utiltyBar);
+        frame.setLayout(new BorderLayout());
+        frame.getContentPane().add(utiltyBar, BorderLayout.WEST);
+
 
         frame.getContentPane().add(drawingArea);
-        frame.setSize(400, 420);
+        frame.setSize(450, 400);
         frame.setLocationRelativeTo( null );
         frame.setVisible(true);
+        frame.pack();
     }
 
     static class ToolSelect extends JPanel{
-        JRadioButton plot = new JRadioButton("plot");
-        JRadioButton line;
-        JRadioButton rectangle;
-        JRadioButton ellipse;
-        JRadioButton polygon;
-
-        public void ToolSelect(){
-            JToolBar toolSelectBar = new JToolBar();
-            toolSelectBar.add(plot);
-            toolSelectBar.add(line);
-            toolSelectBar.add(rectangle);
-            toolSelectBar.add(ellipse);
-            toolSelectBar.add(polygon);
-        }
-
-
-
+        static JRadioButton plot = new JRadioButton("plot");
+        static JRadioButton line = new JRadioButton("line");
+        static JRadioButton rectangle = new JRadioButton("rectangle");
+        static JRadioButton ellipse = new JRadioButton("ellipse");
+        static JRadioButton polygon = new JRadioButton("polygon");
     }
 
     static class DrawingArea extends JPanel {
