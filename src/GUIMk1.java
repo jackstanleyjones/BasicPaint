@@ -23,6 +23,14 @@ public class GUIMk1 {
     public static void createGUI(){
         DrawingArea drawingArea = new DrawingArea();
         JToolBar utiltyBar = new JToolBar(JToolBar.VERTICAL);
+        ButtonGroup tools = new ButtonGroup();
+
+        tools.add(ToolSelect.plot);
+        tools.add(ToolSelect.line);
+        tools.add(ToolSelect.rectangle);
+        tools.add(ToolSelect.ellipse);
+        tools.add(ToolSelect.polygon);
+
         utiltyBar.add(ToolSelect.plot);
         utiltyBar.add(ToolSelect.line);
         utiltyBar.add(ToolSelect.rectangle);
@@ -44,11 +52,16 @@ public class GUIMk1 {
     }
 
     static class ToolSelect extends JPanel{
+        String toolSelction = null;
         static JRadioButton plot = new JRadioButton("plot");
         static JRadioButton line = new JRadioButton("line");
         static JRadioButton rectangle = new JRadioButton("rectangle");
         static JRadioButton ellipse = new JRadioButton("ellipse");
         static JRadioButton polygon = new JRadioButton("polygon");
+
+        String GetTool(){
+            return this.toolSelction;
+        }
     }
 
     static class DrawingArea extends JPanel {
