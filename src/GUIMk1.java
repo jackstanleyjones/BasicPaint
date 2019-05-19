@@ -1,9 +1,7 @@
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 import java.util.ArrayList;
 
 public class GUIMk1 {
@@ -22,21 +20,8 @@ public class GUIMk1 {
 
     public static void createGUI(){
         DrawingArea drawingArea = new DrawingArea();
-        JToolBar utiltyBar = new JToolBar(JToolBar.VERTICAL);
-        ButtonGroup tools = new ButtonGroup();
-
-        tools.add(ToolSelect.plot);
-        tools.add(ToolSelect.line);
-        tools.add(ToolSelect.rectangle);
-        tools.add(ToolSelect.ellipse);
-        tools.add(ToolSelect.polygon);
-
-        utiltyBar.add(ToolSelect.plot);
-        utiltyBar.add(ToolSelect.line);
-        utiltyBar.add(ToolSelect.rectangle);
-        utiltyBar.add(ToolSelect.ellipse);
-        utiltyBar.add(ToolSelect.polygon);
-
+        ToolSelect utiltyBar = new ToolSelect(drawingArea);
+        //ButtonGroup tools = new ButtonGroup();
         JFrame.setDefaultLookAndFeelDecorated(true);
         JFrame frame = new JFrame("GUIMk1");
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
@@ -51,16 +36,51 @@ public class GUIMk1 {
         frame.pack();
     }
 
-    static class ToolSelect extends JPanel{
-        String toolSelction = null;
-        static JRadioButton plot = new JRadioButton("plot");
-        static JRadioButton line = new JRadioButton("line");
-        static JRadioButton rectangle = new JRadioButton("rectangle");
-        static JRadioButton ellipse = new JRadioButton("ellipse");
-        static JRadioButton polygon = new JRadioButton("polygon");
+    static class ToolSelect extends JPanel implements ActionListener{
+        public static String toolSelction;
+        public ButtonGroup toolGroup = new ButtonGroup();
 
-        String GetTool(){
+        private DrawingArea drawingArea;
+
+        public ToolSelect(DrawingArea drawingArea){
+            this.drawingArea = drawingArea;
+            JToolBar toolbar  = new JToolBar(null, JToolBar.VERTICAL);
+            toolbar.add(makeButton("plot"));
+            toolbar.add(makeButton("line"));
+            toolbar.add(makeButton("rectangle"));
+            toolbar.add(makeButton("ellipse"));
+            toolbar.add(makeButton("polygon"));
+            add(toolbar);
+
+        }
+
+         private JRadioButton makeButton(String text){
+            JRadioButton button = new JRadioButton(text);
+            button.setHorizontalAlignment(SwingConstants.LEFT);
+            button.setVerticalAlignment(SwingConstants.BOTTOM);
+            toolGroup.add(button);
+
+
+             button.addActionListener( this );
+            return button;
+         }
+
+         private void setToolSelction(String tool){
+            this.toolSelction = tool;
+        }
+
+
+        public String GetTool(){
             return this.toolSelction;
+        }
+
+
+        public void actionPerformed(ActionEvent e) {
+            JRadioButton button = (JRadioButton)e.getSource();
+
+            setToolSelction(e.getActionCommand());
+            System.out.print(GetTool());
+
         }
     }
 
