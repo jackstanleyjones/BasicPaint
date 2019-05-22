@@ -148,7 +148,6 @@ public class GUIMk1 {
                     } else if (cr.getType() == "plot"){
                         g.drawOval(r.x, r.y, r.width, r.height);
                     }
-
             //  Paint the Rectangle as the mouse is being dragged
 
                 if (shape != null) {
@@ -159,7 +158,10 @@ public class GUIMk1 {
                         g.drawRect(c.x, c.y, c.width, c.height);
                     } else if (ToolSelect.GetTool() == "ellipse"){
                         g.drawOval(c.x, c.y, c.width, c.height);
+                    }else if (ToolSelect.GetTool() == "line"){
+                        g.drawLine(c.x,c.y, c.width,c.height);
                     }
+
                 }
             }
 
@@ -174,19 +176,15 @@ public class GUIMk1 {
         }
 
 
-
-        public void clear() {
-            coloredRectangles.clear();
-            repaint();
-        }
-
         class MyMouseListener extends MouseInputAdapter {
+
             private Point startPoint;
 
 
 
             public void mousePressed(MouseEvent e) {
                 startPoint = e.getPoint();
+
                 shape = new ColoredRectangle(Color.BLACK, new Rectangle(), ToolSelect.GetTool());
                 if (ToolSelect.GetTool() == "plot"){
                     shape.shape.setBounds(e.getX(),e.getY(),1,1);
@@ -204,6 +202,8 @@ public class GUIMk1 {
                 }
                 repaint();
             }
+
+
 
             public void mouseReleased(MouseEvent e) {
                 if (shape.shape.width != 0 || shape.shape.height != 0) {
