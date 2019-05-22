@@ -169,30 +169,6 @@ public class GUIMk1 {
         }
     }
 
-    /*static class ColourSelect extends JPanel implements ActionListener{
-        public Color colour = Color.BLACK;
-        public ButtonGroup toolGroup = new ButtonGroup();
-
-        private DrawingArea drawingArea;
-
-        public ColorSelect(){
-            this.drawingArea = drawingArea;
-            JToolBar toolbar  = new JToolBar(null, JToolBar.VERTICAL);
-            toolbar.add(makeButton("blue"));
-            toolbar.add(makeButton("red"));
-            toolbar.add(makeButton("green"));
-            toolbar.add(makeButton("ellipse"));
-            toolbar.add(makeButton("no colour"));
-            add(toolbar);
-        }
-
-        private JRadioButton makeButton(String text){
-            JRadioButton button = new JRadioButton(text);
-            button.setHorizontalAlignment(SwingConstants.LEFT);
-            button.setVerticalAlignment(SwingConstants.BOTTOM);
-            toolGroup.add(button);
-    }
-    */
 
     static class DrawingArea extends JPanel {
         private final static int AREA_SIZE = 400;
@@ -288,7 +264,7 @@ public class GUIMk1 {
                 int width = Math.abs(startPoint.x - e.getX());
                 int height = Math.abs(startPoint.y - e.getY());
 
-                if(ToolSelect.GetTool() != "plot" || ToolSelect.GetTool() != "line") {
+                if(ToolSelect.GetTool() != "plot" && ToolSelect.GetTool() != "line") {
                     shape.shape.setBounds(x, y, width, height);
                 } else if (ToolSelect.GetTool() == "line"){
                     shape.shape.setBounds(shape.shape.x,shape.shape.y, e.getXOnScreen(), e.getYOnScreen());
