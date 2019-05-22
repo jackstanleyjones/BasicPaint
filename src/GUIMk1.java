@@ -147,6 +147,8 @@ public class GUIMk1 {
                         g.drawOval(r.x, r.y, r.width, r.height);
                     } else if (cr.getType() == "plot"){
                         g.drawOval(r.x, r.y, r.width, r.height);
+                    } else if (cr.getType() == "line"){
+                        g.drawLine(r.x,r.y,r.width, r.height);
                     }
             //  Paint the Rectangle as the mouse is being dragged
 
@@ -197,8 +199,10 @@ public class GUIMk1 {
                 int width = Math.abs(startPoint.x - e.getX());
                 int height = Math.abs(startPoint.y - e.getY());
 
-                if(ToolSelect.GetTool() != "plot") {
+                if(ToolSelect.GetTool() != "plot" || ToolSelect.GetTool() != "line") {
                     shape.shape.setBounds(x, y, width, height);
+                } else if (ToolSelect.GetTool() == "line"){
+                    shape.shape.setBounds(startPoint.x,startPoint.y, e.getX(), e.getY());
                 }
                 repaint();
             }
