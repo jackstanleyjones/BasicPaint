@@ -44,25 +44,38 @@ public class GUIMk1 {
         public static String toolSelection = "plot";
         public ButtonGroup toolGroup = new ButtonGroup();
         public static Color borderColor = Color.BLACK;
+        public static Color fillColor = null;
 
         private DrawingArea drawingArea;
 
         public ToolSelect(DrawingArea drawingArea){
             this.drawingArea = drawingArea;
             JToolBar toolbar  = new JToolBar(null, JToolBar.VERTICAL);
+
+            ColorChooserButton borderColorChooser = new ColorChooserButton(Color.WHITE);
+            borderColorChooser.addColorChangedListener(new ColorChooserButton.ColorChangedListener() {
+                @Override
+                public void colorChanged(Color newColor) {
+                    setBorderColor(newColor);
+                }
+            });
+
+            ColorChooserButton fillColorChooser = new ColorChooserButton(Color.WHITE);
+            fillColorChooser.addColorChangedListener(new ColorChooserButton.ColorChangedListener() {
+                @Override
+                public void colorChanged(Color newColor) {
+                    setFillColor(newColor);
+                }
+            });
+
             toolbar.add(makeButton("plot"));
             toolbar.add(makeButton("line"));
             toolbar.add(makeButton("rectangle"));
             toolbar.add(makeButton("ellipse"));
-            ColorChooserButton colorChooser = new ColorChooserButton(Color.WHITE);
-            colorChooser.addColorChangedListener(new ColorChooserButton.ColorChangedListener() {
-                @Override
-                public void colorChanged(Color newColor) {
-                    setColor(newColor);
-                }
-            });
+
             toolbar.add(makeButton("polygon"));
-            toolbar.add(colorChooser);
+            toolbar.add(borderColorChooser);
+            toolbar.add(fillColorChooser);
             add(toolbar);
 
         }
@@ -82,14 +95,21 @@ public class GUIMk1 {
             this.toolSelection = tool;
         }
 
-        private void setColor(Color c){
+        private void setBorderColor(Color c){
             this.borderColor = c;
         }
 
-        public static Color GetColor(){
+        public static Color GetBorderColor(){
             return borderColor;
         }
 
+        private void setFillColor(Color c){
+            this.fillColor = c;
+        }
+
+        public static Color GetFillColor(){
+            return fillColor;
+        }
 
         public static String GetTool(){
             return toolSelection;
@@ -173,7 +193,7 @@ public class GUIMk1 {
     static class DrawingArea extends JPanel {
         private final static int AREA_SIZE = 400;
         private ArrayList<ColoredRectangle> coloredRectangles = new ArrayList<ColoredRectangle>();
-        private ColoredRectangle shape = new ColoredRectangle(ToolSelect.GetColor(), new Rectangle(), ToolSelect.GetTool());
+        private ColoredRectangle shape = new ColoredRectangle(ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), new Rectangle(), ToolSelect.GetTool());
 
 
 
@@ -198,32 +218,56 @@ public class GUIMk1 {
 
             //  Custom code to paint all the Rectangles from the List
 
-            Color foreground = g.getColor();
 
-            g.setColor(ToolSelect.GetColor());
+
+            g.setColor(getForeground());
 
                 for (DrawingArea.ColoredRectangle cr : coloredRectangles) {
-                    g.setColor(cr.getForeground());
+                    //g.setColor(getForeground());
                     Rectangle r = cr.getRectangle().getBounds();
+                    //g.setColor(ToolSelect.GetFillColor());
                     if (cr.getType() == "rectangle") {
+                        g.setColor(cr.border);
                         g.drawRect(r.x, r.y, r.width, r.height);
+                        g.setColor(cr.fill);
+                        if (cr.fill != null) {
+                            g.fillRect(r.x, r.y, r.width, r.height);
+                        }
                     } else if (cr.getType() == "ellipse"){
+                        g.setColor(cr.border);
                         g.drawOval(r.x, r.y, r.width, r.height);
+                        g.setColor(cr.fill);
+                        if (cr.fill != null) {
+                            g.fillOval(r.x, r.y, r.width, r.height);
+                        }
                     } else if (cr.getType() == "plot"){
+                        g.setColor(cr.border);
                         g.drawOval(r.x, r.y, r.width, r.height);
                     } else if (cr.getType() == "line"){
+                        g.setColor(cr.border);
                         g.drawLine(r.x,r.y,r.width, r.height);
                     }
+                    g.setColor(null);
             //  Paint the Rectangle as the mouse is being dragged
 
                 if (shape != null) {
                     Graphics2D g2d = (Graphics2D) g;
-                    g2d.setColor(ToolSelect.GetColor());
+                    g2d.setColor(ToolSelect.GetBorderColor());
                     Rectangle c = shape.shape.getBounds();
                     if (ToolSelect.GetTool() == "rectangle") {
+                        g.setColor(cr.border);
                         g.drawRect(c.x, c.y, c.width, c.height);
+                        g.setColor(shape.fill);
+                        if (shape.fill != null) {
+                            g.fillRect(c.x, c.y, c.width, c.height);
+                        }
                     } else if (ToolSelect.GetTool() == "ellipse"){
+                        g.setColor(shape.border);
                         g.drawOval(c.x, c.y, c.width, c.height);
+                        g.setColor(shape.fill);
+                        if (cr.fill != null) {
+                            g.fillOval(c.x, c.y, c.width, c.height);
+                        }
                     }else if (ToolSelect.GetTool() == "line"){
                         g.drawLine(c.x,c.y, c.width,c.height);
                     }
@@ -233,10 +277,10 @@ public class GUIMk1 {
 
         }
 
-        public void addRectangle(Rectangle rectangle, Color color, String type) {
+        public void addRectangle(Rectangle rectangle, Color Bcolor, Color Fcolor, String type) {
             //  Add the Rectangle to the List so it can be repainted
-                ColoredRectangle cr = new ColoredRectangle(color, rectangle, type);
-                System.out.print(color);
+                ColoredRectangle cr = new ColoredRectangle(Bcolor, Fcolor, rectangle, type);
+                //System.out.print(color);
                 coloredRectangles.add(cr);
                 repaint();
 
@@ -252,7 +296,7 @@ public class GUIMk1 {
             public void mousePressed(MouseEvent e) {
                 startPoint = e.getPoint();
 
-                shape = new ColoredRectangle(ToolSelect.GetColor(), new Rectangle(), ToolSelect.GetTool());
+                shape = new ColoredRectangle(ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), new Rectangle(), ToolSelect.GetTool());
                 if (ToolSelect.GetTool() == "plot" || ToolSelect.GetTool() == "line"){
                     shape.shape.setBounds(e.getX(),e.getY(),1,1);
                 }
@@ -279,7 +323,7 @@ public class GUIMk1 {
                     if(ToolSelect.GetTool() == "line"){
                         shape.shape.setBounds(shape.shape.x, shape.shape.y, e.getX(),e.getY());
                     }
-                    addRectangle(shape.shape, ToolSelect.GetColor(), ToolSelect.GetTool());
+                    addRectangle(shape.shape, ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), ToolSelect.GetTool());
                 }
 
                 shape = null;
@@ -287,27 +331,34 @@ public class GUIMk1 {
         }
 
         class ColoredRectangle {
-            private Color foreground;
+            private Color border;
             private Rectangle shape;
             private String type;
+            private Color fill;
 
 
 
-            public ColoredRectangle(Color foreground, Rectangle shape, String type) {
-                this.foreground = foreground;
+            public ColoredRectangle(Color border, Color fill, Rectangle shape, String type) {
+                this.border = border;
+                this.fill = fill;
                 this.shape = shape;
                 this.type = type;
             }
 
-            public Color getForeground() {
-                return foreground;
+            public Color getBorder() {
+                return border;
             }
 
             public String getType(){ return type;}
 
+            public Color getFill(){return fill;}
 
-            public void setForeground(Color foreground) {
-                this.foreground = foreground;
+            public void setFill(Color fill){
+                this.fill = fill;
+            }
+
+            public void setBorder(Color border) {
+                this.border = border;
             }
 
             public Rectangle getRectangle() {
