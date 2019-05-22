@@ -87,6 +87,25 @@ public class GUIMk1 {
         }
     }
 
+    /*
+    static class ColorSelect extends JPanel implements ActionListener{
+        public ButtonGroup toolGroup = new ButtonGroup();
+
+        private DrawingArea drawingArea;
+
+        public ColorSelect(){
+            this.drawingArea = drawingArea;
+            JToolBar toolbar  = new JToolBar(null, JToolBar.VERTICAL);
+            toolbar.add(makeButton("blue"));
+            toolbar.add(makeButton("line"));
+            toolbar.add(makeButton("rectangle"));
+            toolbar.add(makeButton("ellipse"));
+            toolbar.add(makeButton("polygon"));
+            add(toolbar);
+        }
+    }
+    */
+
     static class DrawingArea extends JPanel {
         private final static int AREA_SIZE = 400;
         private ArrayList<ColoredRectangle> coloredRectangles = new ArrayList<ColoredRectangle>();
@@ -126,6 +145,8 @@ public class GUIMk1 {
                         g.drawRect(r.x, r.y, r.width, r.height);
                     } else if (cr.getType() == "ellipse"){
                         g.drawOval(r.x, r.y, r.width, r.height);
+                    } else if (cr.getType() == "plot"){
+                        g.drawOval(r.x, r.y, r.width, r.height);
                     }
 
             //  Paint the Rectangle as the mouse is being dragged
@@ -162,9 +183,14 @@ public class GUIMk1 {
         class MyMouseListener extends MouseInputAdapter {
             private Point startPoint;
 
+
+
             public void mousePressed(MouseEvent e) {
                 startPoint = e.getPoint();
                 shape = new ColoredRectangle(Color.BLACK, new Rectangle(), ToolSelect.GetTool());
+                if (ToolSelect.GetTool() == "plot"){
+                    shape.shape.setBounds(e.getX(),e.getY(),1,1);
+                }
             }
 
             public void mouseDragged(MouseEvent e) {
@@ -173,7 +199,9 @@ public class GUIMk1 {
                 int width = Math.abs(startPoint.x - e.getX());
                 int height = Math.abs(startPoint.y - e.getY());
 
-                shape.shape.setBounds(x, y, width, height);
+                if(ToolSelect.GetTool() != "plot") {
+                    shape.shape.setBounds(x, y, width, height);
+                }
                 repaint();
             }
 
@@ -216,13 +244,3 @@ public class GUIMk1 {
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
