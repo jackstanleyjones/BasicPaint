@@ -290,6 +290,7 @@ public class GUIMk1 {
         class MyMouseListener extends MouseInputAdapter {
 
             private Point startPoint;
+            private Point pointEnd;
 
 
 
@@ -307,11 +308,12 @@ public class GUIMk1 {
                 int y = Math.min(startPoint.y, e.getY());
                 int width = Math.abs(startPoint.x - e.getX());
                 int height = Math.abs(startPoint.y - e.getY());
+                pointEnd = e.getPoint();
 
                 if(ToolSelect.GetTool() != "plot" && ToolSelect.GetTool() != "line") {
                     shape.shape.setBounds(x, y, width, height);
                 } else if (ToolSelect.GetTool() == "line"){
-                    shape.shape.setBounds(shape.shape.x,shape.shape.y, e.getXOnScreen(), e.getYOnScreen());
+                    shape.shape.setBounds(startPoint.x,startPoint.y, pointEnd.x, pointEnd.y);
                 }
                 repaint();
             }
