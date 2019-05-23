@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
+import javax.tools.Tool;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.event.ActionListener;
@@ -7,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Vector;
 
 public class GUIMk1 {
     JPanel panel1;
@@ -246,6 +248,9 @@ public class GUIMk1 {
                     } else if (cr.getType() == "line"){
                         g.setColor(cr.border);
                         g.drawLine(r.x,r.y,r.width, r.height);
+                    } else if (cr.getType() == "polygon"){
+                        g.setColor(cr.border);
+                        g.drawRect(r.x,r.y,r.width,r.height);
                     }
                     g.setColor(null);
             //  Paint the Rectangle as the mouse is being dragged
@@ -292,14 +297,50 @@ public class GUIMk1 {
             private Point startPoint;
             private Point pointEnd;
 
+            int Vertices = 0; //to store number of vertices
+
+            //use vector instead of array because dynamic structure is required as there can be any number of vertices >= 3
+            Vector<Integer> PolyX = new Vector<Integer>(3,1); //to store x coordinates
+            Vector<Integer> PolyY = new Vector<Integer> (3,1);
+
 
 
             public void mousePressed(MouseEvent e) {
                 startPoint = e.getPoint();
+                if(ToolSelect.GetTool() != "polygon") {
+                    shape = new ColoredRectangle(ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), new Rectangle(), ToolSelect.GetTool());
+                    if (ToolSelect.GetTool() == "plot" || ToolSelect.GetTool() == "line") {
+                        shape.shape.setBounds(e.getX(), e.getY(), 1, 1);
+                    }
+                } else {
+                    if (e.getButton() == MouseEvent.BUTTON1) //left button is clicked - creating new vertex for polygon
+                    {
+                        Vertices++; //new polygon vertex is created
+                        PolyX.addElement(e.getX()); //store x coordinates in vector
+                        PolyY.addElement(e.getY()); //store y coordinates in vector
+                    } else if (e.getButton() == MouseEvent.BUTTON2) //right button is clicked - instruction to draw polygon
+                    {
+                        if (Vertices < 3) //a polygon has at least 3 vertices
+                        {
+                            JOptionPane.showMessageDialog(null, "There must be at least 3 clicks.");
+                        } else //draw polygon
+                        {
+                            //create array to pass coordinates to Polygon which accepts only int[] as coordinates
+                            int[] xPoints = new int[PolyX.size() - 1];
+                            int[] yPoints = new int[PolyY.size() - 1];
+                            //copy coordinates from vector to array
+                            for (int i = 0; i < Vertices; i++) {
+                                xPoints[i] = PolyX.elementAt(i + 1);
+                            }
+                            for (int i = 0; i < Vertices; i++) {
+                                yPoints[i] = PolyY.elementAt(i + 1);
+                            }
+                            //draw polygon
+                            Polygon poly = new Polygon(xPoints, yPoints, Vertices);
+                            addRectangle(poly.getBounds(), ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), ToolSelect.GetTool());
+                        }
 
-                shape = new ColoredRectangle(ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), new Rectangle(), ToolSelect.GetTool());
-                if (ToolSelect.GetTool() == "plot" || ToolSelect.GetTool() == "line"){
-                    shape.shape.setBounds(e.getX(),e.getY(),1,1);
+                    }
                 }
             }
 
@@ -321,14 +362,16 @@ public class GUIMk1 {
 
 
             public void mouseReleased(MouseEvent e) {
-                if (shape.shape.width != 0 || shape.shape.height != 0) {
-                    if(ToolSelect.GetTool() == "line"){
-                        shape.shape.setBounds(shape.shape.x, shape.shape.y, e.getX(),e.getY());
+                if(ToolSelect.GetTool() != "polygon") {
+                    if (shape.shape.width != 0 || shape.shape.height != 0) {
+                        if (ToolSelect.GetTool() == "line") {
+                            shape.shape.setBounds(shape.shape.x, shape.shape.y, e.getX(), e.getY());
+                        }
+                        addRectangle(shape.shape, ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), ToolSelect.GetTool());
                     }
-                    addRectangle(shape.shape, ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), ToolSelect.GetTool());
-                }
 
-                shape = null;
+                    shape = null;
+                }
             }
         }
 
