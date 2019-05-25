@@ -217,6 +217,7 @@ public class GUIMk1 {
         @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
+            Graphics2D graphx = (Graphics2D) g;
 
             //  Custom code to paint all the Rectangles from the List
 
@@ -250,12 +251,12 @@ public class GUIMk1 {
                         g.drawLine(r.x,r.y,r.width, r.height);
                     }else if (cr.getType() == "polygon"){
                         g.setColor(cr.border);
+                        //graphx.draw(poly);
                         g.drawRect(r.x,r.y,r.width,r.height);
                         g.setColor(cr.fill);
                         if (cr.fill != null) {
                             g.fillRect(r.x, r.y, r.width, r.height);
                         }
-
                     }
                     g.setColor(null);
             //  Paint the Rectangle as the mouse is being dragged
@@ -301,7 +302,7 @@ public class GUIMk1 {
 
             private Point startPoint;
             private Point pointEnd;
-            public Polygon poly;
+
             int vertices = 0; //to store number of vertices
             //use vector instead of array because dynamic structure is required as there can be any number of vertices >= 3
             Vector<Integer> PolyX = new Vector<Integer>(3,1); //to store x coordinates
@@ -318,10 +319,6 @@ public class GUIMk1 {
                 if (ToolSelect.GetTool() == "plot" || ToolSelect.GetTool() == "line"){
                     shape.shape.setBounds(e.getX(),e.getY(),1,1);
                 }
-
-                //create array to pass coordinates to Polygon which accepts only int[] as coordinates
-
-
 
             }
 
@@ -356,18 +353,22 @@ public class GUIMk1 {
                     //copy coordinates from vector to array
                     for (int i = 0; i < vertices; i++) {
                         xPoints[i] = PolyX.elementAt(i + 1);
+                        shape.shape.setBounds(xPoints[i],yPoints[i],vertices,vertices);
                     }
                     for (int i = 0; i < vertices; i++) {
                         yPoints[i] = PolyY.elementAt(i + 1);
+                        shape.shape.setBounds(xPoints[i],yPoints[i],vertices,vertices);
                     }
 
                     Polygon poly = new Polygon(xPoints, yPoints, vertices);
-                    addRectangle(poly.getBounds(), ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), ToolSelect.GetTool());
+                    addRectangle(shape.shape,ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), ToolSelect.GetTool());
                     vertices++;
 
                     shape = null;
                 }
+
             }
+
         }
 
         class ColoredRectangle {
