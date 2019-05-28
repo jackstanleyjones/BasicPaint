@@ -285,7 +285,7 @@ public class GUIMk1 {
     static class DrawingArea extends JPanel {
         private final static int AREA_SIZE = 400;
         private final ArrayList<ColoredRectangle> coloredRectangles = new ArrayList<>();
-        private ColoredRectangle shape = new ColoredRectangle(ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), new Rectangle(), ToolSelect.GetTool());
+        private ColoredRectangle shape = new ColoredRectangle(ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), new Rectangle(), ToolSelect.GetTool(), null);
 
 
         /**
@@ -346,13 +346,17 @@ public class GUIMk1 {
                     } else if (Objects.equals(cr.getType(), "line")){
                         graphic.setColor(cr.border);
                         graphic.drawLine(r.x,r.y,r.width, r.height);
+
                     }else if (Objects.equals(cr.getType(), "polygon")){
-                        graphic.setColor(cr.border);
-                        //graphx.draw(poly);
-                        graphic.drawRect(r.x,r.y,r.width,r.height);
-                        graphic.setColor(cr.fill);
-                        if (cr.fill != null) {
-                            graphic.fillRect(r.x, r.y, r.width, r.height);
+                        if (cr.poly != null) {
+                            System.out.print(cr.poly.npoints);
+                            graphic.setColor(cr.border);
+                            graphic.drawPolygon(cr.poly);
+                            // graphic.drawRect(r.x,r.y,r.width,r.height);
+                            graphic.setColor(cr.fill);
+                            if (cr.fill != null) {
+                                graphic.fillPolygon(cr.poly);
+                            }
                         }
                     }
                     graphic.setColor(null);
@@ -379,6 +383,17 @@ public class GUIMk1 {
                     }else if (Objects.equals(ToolSelect.GetTool(), "line")){
                         graphic.drawLine(c.x,c.y, c.width,c.height);
                     }
+                    else if (Objects.equals(ToolSelect.GetTool(), "polygon")){
+                        if (cr.poly != null) {
+                            graphic.setColor(shape.border);
+                            graphic.drawPolygon(shape.poly);
+                            // graphic.drawRect(r.x,r.y,r.width,r.height);
+                            graphic.setColor(shape.fill);
+                            if (shape.fill != null) {
+                                graphic.fillPolygon(shape.poly);
+                            }
+                        }
+                    }
 
                 }
             }
@@ -391,9 +406,9 @@ public class GUIMk1 {
          * @param Fcolor Fill color of shape
          * @param type The type of shape
          */
-        void addRectangle(Rectangle rectangle, Color Bcolor, Color Fcolor, String type) {
+        void addRectangle(Rectangle rectangle, Color Bcolor, Color Fcolor, String type, Polygon poly) {
             //  Add the Rectangle to the List so it can be repainted
-                ColoredRectangle cr = new ColoredRectangle(Bcolor, Fcolor, rectangle, type);
+                ColoredRectangle cr = new ColoredRectangle(Bcolor, Fcolor, rectangle, type, poly);
                 //System.out.print(color);
                 coloredRectangles.add(cr);
                 repaint();
@@ -409,10 +424,16 @@ public class GUIMk1 {
             private Point startPoint;
             private Point pointEnd;
 
+
+
             int vertices = 0; //to store number of vertices
             //use vector instead of array because dynamic structure is required as there can be any number of vertices >= 3
             final Vector<Integer> PolyX = new Vector<>(3, 1); //to store x coordinates
             final Vector<Integer> PolyY = new Vector<>(3, 1); //to store y coordinates
+
+            Polygon poly = new Polygon();
+
+
 
 
             /**
@@ -421,9 +442,7 @@ public class GUIMk1 {
             public void mousePressed(MouseEvent e) {
 
                 startPoint = e.getPoint();
-                PolyX.addElement(e.getX());
-                PolyY.addElement(e.getY());
-                shape = new ColoredRectangle(ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), new Rectangle(), ToolSelect.GetTool());
+                shape = new ColoredRectangle(ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), new Rectangle(), ToolSelect.GetTool(), null);
                 if (Objects.equals(ToolSelect.GetTool(), "plot") || Objects.equals(ToolSelect.GetTool(), "line")){
                     shape.shape.setBounds(e.getX(),e.getY(),1,1);
                 }
@@ -440,7 +459,7 @@ public class GUIMk1 {
                 int height = Math.abs(startPoint.y - e.getY());
                 pointEnd = e.getPoint();
 
-                if(!Objects.equals(ToolSelect.GetTool(), "plot") && !Objects.equals(ToolSelect.GetTool(), "line")) {
+                if(!Objects.equals(ToolSelect.GetTool(), "plot") && !Objects.equals(ToolSelect.GetTool(), "line") && !Objects.equals(ToolSelect.GetTool(), "polygon")) {
                     shape.shape.setBounds(x, y, width, height);
                 } else if (Objects.equals(ToolSelect.GetTool(), "line")){
                     shape.shape.setBounds(startPoint.x,startPoint.y, pointEnd.x, pointEnd.y);
@@ -458,27 +477,47 @@ public class GUIMk1 {
                         if (Objects.equals(ToolSelect.GetTool(), "line")) {
                             shape.shape.setBounds(shape.shape.x, shape.shape.y, e.getX(), e.getY());
                         }
-                        addRectangle(shape.shape, ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), ToolSelect.GetTool());
+                        addRectangle(shape.shape, ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), ToolSelect.GetTool(), null);
                     }
                 }else {
-                    int[] xPoints = new int[PolyX.size() - 1];
-                    int[] yPoints = new int[PolyY.size() - 1];
+
                     //copy coordinates from vector to array
-                    for (int i = 0; i < vertices; i++) {
-                        xPoints[i] = PolyX.elementAt(i + 1);
-                        shape.shape.setBounds(xPoints[i],yPoints[i],vertices,vertices);
-                    }
-                    for (int i = 0; i < vertices; i++) {
-                        yPoints[i] = PolyY.elementAt(i + 1);
-                        shape.shape.setBounds(xPoints[i],yPoints[i],vertices,vertices);
-                    }
+                    /*
 
-                    Polygon poly = new Polygon(xPoints, yPoints, vertices);
-                    addRectangle(shape.shape,ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), ToolSelect.GetTool());
-                    vertices++;
+                    */
 
-                    shape = null;
+                    if(SwingUtilities.isLeftMouseButton(e)){
+                        PolyX.addElement(e.getX());
+                        PolyY.addElement(e.getY());
+                        vertices++;
+
+                    } else if (SwingUtilities.isRightMouseButton(e)){
+
+                        int[] xPoints = new int[PolyX.size()];
+                        int[] yPoints = new int[PolyY.size()];
+
+
+                        for (int i = 0; i < vertices; i++) {
+                            xPoints[i] = PolyX.elementAt(i);
+                        }
+                        for (int i = 0; i < vertices; i++) {
+                            yPoints[i] = PolyY.elementAt(i);
+                            shape.shape.setBounds(xPoints[i],yPoints[i],vertices,vertices);
+                        }
+                        Polygon poly = new Polygon(xPoints,yPoints,vertices);
+                        shape.poly = poly;
+
+                        PolyX.clear();
+                        PolyY.clear();
+                        vertices = 0;
+
+                    }
+                    addRectangle(shape.shape,ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), ToolSelect.GetTool(), shape.poly);
+
                 }
+                shape = null;
+
+
 
             }
 
@@ -492,6 +531,7 @@ public class GUIMk1 {
             private final Rectangle shape;
             private final String type;
             private Color fill;
+            private Polygon poly;
 
 
             /**
@@ -500,11 +540,12 @@ public class GUIMk1 {
              * @param shape The main shape, including its size/ coords etc.
              * @param type The type of shape
              */
-            ColoredRectangle(Color border, Color fill, Rectangle shape, String type) {
+            ColoredRectangle(Color border, Color fill, Rectangle shape, String type, Polygon poly) {
                 this.border = border;
                 this.fill = fill;
                 this.shape = shape;
                 this.type = type;
+                this.poly = poly;
             }
 
             /**
@@ -543,6 +584,10 @@ public class GUIMk1 {
              */
             Rectangle getRectangle() {
                 return shape;
+            }
+
+            Polygon getPoly(){
+                return poly;
             }
         }
     }
