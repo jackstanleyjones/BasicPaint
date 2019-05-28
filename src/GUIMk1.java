@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -9,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Vector;
 
+
+
 public class GUIMk1 {
     JPanel panel1;
 
@@ -16,6 +20,7 @@ public class GUIMk1 {
      * @param args
      */
     public static void main(String[] args){
+
         SwingUtilities.invokeLater(GUIMk1::createGUI);
 
     }
@@ -26,11 +31,14 @@ public class GUIMk1 {
     private static void createGUI(){
         DrawingArea drawingArea = new DrawingArea();
         ToolSelect utiltyBar = new ToolSelect(drawingArea);
+        ZoomBar zoomBar= new ZoomBar();
         JFrame.setDefaultLookAndFeelDecorated(true);
         JFrame frame = new JFrame("GUIMk1");
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
         frame.setLayout(new BorderLayout());
+        frame.getContentPane().add(zoomBar,BorderLayout.PAGE_END);
         frame.getContentPane().add(utiltyBar, BorderLayout.WEST);
+
 
 
         frame.getContentPane().add(drawingArea);
@@ -38,6 +46,70 @@ public class GUIMk1 {
         frame.setLocationRelativeTo( null );
         frame.setVisible(true);
         frame.pack();
+    }
+
+    public static class ZoomBar extends JPanel implements ActionListener, ChangeListener {
+
+        private static final int MIN_ZOOM = 10;
+        private static final int MAX_ZOOM = 200;
+        private static final int DEFAULT_ZOOM = 100;
+        private static final int MAJOR_ZOOM_SPACING = 50;
+        private static final int MINOR_ZOOM_SPACING = 10;
+        private static JSlider slider;
+        private JLabel zoomAmount;
+        private JButton minus;
+        private JButton plus;
+
+        public ZoomBar() {
+            super();
+            JToolBar toolBar = new JToolBar("Zoom", JToolBar.VERTICAL);
+
+            minus = new JButton("-");
+            plus = new JButton("+");
+            slider = new JSlider(MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM);
+
+            slider.setMinorTickSpacing(MINOR_ZOOM_SPACING);
+            slider.setMajorTickSpacing(MAJOR_ZOOM_SPACING);
+            slider.setPaintTicks(true);
+            slider.setSnapToTicks(true);
+
+            zoomAmount = new JLabel(slider.getValue() + "%");
+
+            toolBar.add(zoomAmount);
+            toolBar.add(minus);
+            toolBar.add(slider);
+            toolBar.add(plus);
+            add(toolBar);
+
+            plus.addActionListener(this);
+            minus.addActionListener(this);
+
+            slider.addChangeListener(this);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == plus) {
+                slider.setValue(slider.getValue() + MINOR_ZOOM_SPACING);
+            }
+            else if (e.getSource() == minus) {
+                slider.setValue(slider.getValue() - MINOR_ZOOM_SPACING);
+            }
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            if (slider.getValueIsAdjusting()) {
+                return;
+            }
+            zoomAmount.setText(slider.getValue() + "%");
+
+
+            setPreferredSize(new Dimension(DrawingArea.AREA_SIZE+slider.getValue(),DrawingArea.AREA_SIZE+slider.getValue()));
+            repaint();
+        }
+
+
+
+
     }
 
     /**
@@ -263,7 +335,7 @@ public class GUIMk1 {
         @Override
         public Dimension getPreferredSize() {
             return isPreferredSizeSet() ?
-                    super.getPreferredSize() : new Dimension(AREA_SIZE, AREA_SIZE);
+                    super.getPreferredSize() : new Dimension(AREA_SIZE,AREA_SIZE);
         }
 
         /**
@@ -503,4 +575,6 @@ public class GUIMk1 {
             }
         }
     }
+
+
 }
