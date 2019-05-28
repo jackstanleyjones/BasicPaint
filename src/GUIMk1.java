@@ -5,11 +5,12 @@ import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.event.ActionEvent;
-import java.util.List;
+import java.io.FileFilter;
+import java.util.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.Vector;
+import javax.swing.filechooser.*;
+import java.io.*;
+import java.util.List;
 
 
 
@@ -32,15 +33,15 @@ public class GUIMk1 {
         DrawingArea drawingArea = new DrawingArea();
         ToolSelect utiltyBar = new ToolSelect(drawingArea);
         ZoomBar zoomBar= new ZoomBar();
+        MenuBar menuBar = new MenuBar(drawingArea);
+
         JFrame.setDefaultLookAndFeelDecorated(true);
         JFrame frame = new JFrame("GUIMk1");
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
         frame.setLayout(new BorderLayout());
         frame.getContentPane().add(zoomBar,BorderLayout.PAGE_END);
         frame.getContentPane().add(utiltyBar, BorderLayout.WEST);
-
-
-
+        frame.getContentPane().add(menuBar,BorderLayout.NORTH);
         frame.getContentPane().add(drawingArea);
         frame.setSize(450, 400);
         frame.setLocationRelativeTo( null );
@@ -215,6 +216,49 @@ public class GUIMk1 {
             setToolSelction(e.getActionCommand());
             System.out.print(GetTool());
 
+        }
+    }
+
+    static class MenuBar extends JPanel implements ActionListener{
+
+        MenuBar(DrawingArea drawingArea){
+            JMenuBar menuBar = new JMenuBar();
+            JButton openButton = new JButton("open");
+            JButton saveButton = new JButton("save");
+            openButton.addActionListener( this );
+            saveButton.addActionListener( this );
+
+            menuBar.add(openButton);
+            menuBar.add(saveButton);
+            add(menuBar);
+
+
+        }
+        public void actionPerformed(ActionEvent e) {
+            String command = e.getActionCommand();
+
+            if(command.equals("open")){
+                JFileChooser openFileChooser = new JFileChooser();
+                openFileChooser.setAcceptAllFileFilterUsed(false);
+
+                FileNameExtensionFilter fileFilter = new FileNameExtensionFilter("VEC Files","vec");
+                openFileChooser.addChoosableFileFilter(fileFilter);
+
+                int dialog = openFileChooser.showOpenDialog(null);
+                if (dialog == JFileChooser.APPROVE_OPTION) {
+                    System.out.print(openFileChooser.getSelectedFile().getAbsolutePath());
+                    File newFile = openFileChooser.getSelectedFile();
+                    Scanner sc = null;
+                    try {
+                        sc = new Scanner(newFile);
+                    } catch (FileNotFoundException e1) {
+                    }
+                    while (sc.hasNextLine()){
+                        System.out.println(sc.nextLine());
+                    }
+
+                }
+            }
         }
     }
 
@@ -575,6 +619,4 @@ public class GUIMk1 {
             }
         }
     }
-
-
 }
