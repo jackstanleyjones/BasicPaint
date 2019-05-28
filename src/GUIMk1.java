@@ -104,7 +104,7 @@ public class GUIMk1 {
             zoomAmount.setText(slider.getValue() + "%");
 
 
-            setPreferredSize(new Dimension(DrawingArea.AREA_SIZE+slider.getValue(),DrawingArea.AREA_SIZE+slider.getValue()));
+            //setPreferredSize(new Dimension(DrawingArea.AREA_SIZE*slider.getValue(),DrawingArea.AREA_SIZE*slider.getValue()));
             repaint();
         }
 
