@@ -104,7 +104,7 @@ public class GUIMk1 {
             zoomAmount.setText(slider.getValue() + "%");
 
 
-            //setPreferredSize(new Dimension(DrawingArea.AREA_SIZE*slider.getValue(),DrawingArea.AREA_SIZE*slider.getValue()));
+            setPreferredSize(new Dimension(DrawingArea.AREA_SIZE*slider.getValue(),DrawingArea.AREA_SIZE*slider.getValue()));
             repaint();
         }
 
@@ -253,14 +253,14 @@ public class GUIMk1 {
                         sc = new Scanner(newFile);
                     } catch (FileNotFoundException e1) {
                     }
-                    while (sc.hasNextLine()){
-                        System.out.println(sc.nextLine());
-                    }
+                    DrawingArea.setColoredRectangles(DrawingArea.VecToArray(newFile));
+
 
                 }
             }
         }
     }
+
 
 
     /**
@@ -357,9 +357,82 @@ public class GUIMk1 {
      */
     static class DrawingArea extends JPanel {
         private final static int AREA_SIZE = 400;
-        private final ArrayList<ColoredRectangle> coloredRectangles = new ArrayList<>();
+        public static final ArrayList<ColoredRectangle> coloredRectangles = new ArrayList<>();
         private ColoredRectangle shape = new ColoredRectangle(ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), new Rectangle(), ToolSelect.GetTool(), null);
 
+        public static void setColoredRectangles(ArrayList<ColoredRectangle> rectangles){
+            for (ColoredRectangle cr : rectangles) {
+
+
+                coloredRectangles.add(cr);
+            }
+        }
+
+
+        public static ArrayList<ColoredRectangle> VecToArray(File file){
+            Scanner sc = null;
+            try {
+                sc = new Scanner(file);
+            } catch (FileNotFoundException e1) {
+            }
+
+            Color currentLineColor = Color.BLACK;
+            Color currentFillColor = null;
+
+            ArrayList<ColoredRectangle> shapes = new ArrayList<>();
+
+            while (sc.hasNextLine()) {
+
+                ColoredRectangle shape = new ColoredRectangle(currentLineColor, currentFillColor, new Rectangle(), null, null);
+                String currentLine = sc.nextLine();
+                String[] splitStr = currentLine.split("\\s+");
+                if (splitStr[0].equals("PEN")){
+                    System.out.print(splitStr[1]);
+                    currentLineColor = Color.decode(splitStr[1]);
+
+                } else if(splitStr[0].equals("FILL")){
+                    System.out.print(splitStr[1]);
+                    if (splitStr[1].equals("OFF")){
+                        currentFillColor = null;
+                    } else {
+                        currentFillColor = Color.decode((splitStr[1]));
+                    }
+
+
+                } else if(splitStr[0].equals("LINE")){
+                    shape.type = "line";
+                    shape.shape.setBounds((int)(Float.parseFloat(splitStr[1]) * 400),(int)(Float.parseFloat(splitStr[2]) * 400),
+                            (int)(Float.parseFloat(splitStr[3]) * 400),(int)(Float.parseFloat(splitStr[4]) *400));
+                    shapes.add(shape);
+
+
+                } else if(splitStr[0].equals("PLOT")){
+                    shape.type = "plot";
+                    shape.shape.setBounds((int)(Float.parseFloat(splitStr[1]) * 400),(int)(Float.parseFloat(splitStr[2]) * 400),
+                            1,1);
+                    shapes.add(shape);
+
+                } else if(splitStr[0].equals("RECTANGLE")){
+                    shape.type = "rectangle";
+                    shape.shape.setBounds((int)(Float.parseFloat(splitStr[1]) * 200), (int)(Float.parseFloat(splitStr[2]) * 200),
+                            (int)((Float.parseFloat(splitStr[3])) * 200),
+                            (int)((Float.parseFloat(splitStr[4])) * 200));
+                    shapes.add(shape);
+
+                } else if(splitStr[0].equals("ELLIPSE")){
+                    shape.type = "ellipse";
+                    shape.shape.setBounds((int)(Float.parseFloat(splitStr[1]) * 400),(int)(Float.parseFloat(splitStr[2]) * 400),
+                            (int)(Float.parseFloat(splitStr[3]) * 400),(int)(Float.parseFloat(splitStr[4]) *400));
+                    shapes.add(shape);
+
+                } else if(splitStr[0].equals("POLYGON")){
+
+                }
+
+
+            }
+            return shapes;
+        }
 
         /**
          * A new drawing area
@@ -563,6 +636,8 @@ public class GUIMk1 {
                         PolyX.addElement(e.getX());
                         PolyY.addElement(e.getY());
                         vertices++;
+                        shape.shape.setBounds(e.getX(),e.getY(),1,1);
+                        addRectangle(shape.shape, ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), ToolSelect.GetTool(), null            );
 
                     } else if (SwingUtilities.isRightMouseButton(e)){
 
@@ -599,10 +674,10 @@ public class GUIMk1 {
         /**
          *
          */
-        class ColoredRectangle {
+        static class ColoredRectangle {
             private Color border;
             private final Rectangle shape;
-            private final String type;
+            private String type;
             private Color fill;
             private Polygon poly;
 
