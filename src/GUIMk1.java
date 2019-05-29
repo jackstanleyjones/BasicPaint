@@ -3,6 +3,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.event.ActionEvent;
 import java.io.FileFilter;
@@ -32,14 +35,11 @@ public class GUIMk1 {
     private static void createGUI(){
         DrawingArea drawingArea = new DrawingArea();
         ToolSelect utiltyBar = new ToolSelect(drawingArea);
-        ZoomBar zoomBar= new ZoomBar();
         MenuBar menuBar = new MenuBar(drawingArea);
-
         JFrame.setDefaultLookAndFeelDecorated(true);
         JFrame frame = new JFrame("GUIMk1");
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
         frame.setLayout(new BorderLayout());
-        frame.getContentPane().add(zoomBar,BorderLayout.PAGE_END);
         frame.getContentPane().add(utiltyBar, BorderLayout.WEST);
         frame.getContentPane().add(menuBar,BorderLayout.NORTH);
         frame.getContentPane().add(drawingArea);
@@ -49,69 +49,8 @@ public class GUIMk1 {
         frame.pack();
     }
 
-    public static class ZoomBar extends JPanel implements ActionListener, ChangeListener {
-
-        private static final int MIN_ZOOM = 10;
-        private static final int MAX_ZOOM = 200;
-        private static final int DEFAULT_ZOOM = 100;
-        private static final int MAJOR_ZOOM_SPACING = 50;
-        private static final int MINOR_ZOOM_SPACING = 10;
-        private static JSlider slider;
-        private JLabel zoomAmount;
-        private JButton minus;
-        private JButton plus;
-
-        public ZoomBar() {
-            super();
-            JToolBar toolBar = new JToolBar("Zoom", JToolBar.VERTICAL);
-
-            minus = new JButton("-");
-            plus = new JButton("+");
-            slider = new JSlider(MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM);
-
-            slider.setMinorTickSpacing(MINOR_ZOOM_SPACING);
-            slider.setMajorTickSpacing(MAJOR_ZOOM_SPACING);
-            slider.setPaintTicks(true);
-            slider.setSnapToTicks(true);
-
-            zoomAmount = new JLabel(slider.getValue() + "%");
-
-            toolBar.add(zoomAmount);
-            toolBar.add(minus);
-            toolBar.add(slider);
-            toolBar.add(plus);
-            add(toolBar);
-
-            plus.addActionListener(this);
-            minus.addActionListener(this);
-
-            slider.addChangeListener(this);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == plus) {
-                slider.setValue(slider.getValue() + MINOR_ZOOM_SPACING);
-            }
-            else if (e.getSource() == minus) {
-                slider.setValue(slider.getValue() - MINOR_ZOOM_SPACING);
-            }
-        }
-
-        public void stateChanged(ChangeEvent e) {
-            if (slider.getValueIsAdjusting()) {
-                return;
-            }
-            zoomAmount.setText(slider.getValue() + "%");
 
 
-            setPreferredSize(new Dimension(DrawingArea.AREA_SIZE*slider.getValue(),DrawingArea.AREA_SIZE*slider.getValue()));
-            repaint();
-        }
-
-
-
-
-    }
 
     /**
      * Defines Tool Select, a class where the tool selection bar is created
@@ -141,8 +80,8 @@ public class GUIMk1 {
             toolbar.add(makeButton("line"));
             toolbar.add(makeButton("rectangle"));
             toolbar.add(makeButton("ellipse"));
-
             toolbar.add(makeButton("polygon"));
+            toolbar.add(makeButton("zoom/pan"));
             toolbar.add(borderColorChooser);
             toolbar.add(fillColorChooser);
             add(toolbar);
@@ -352,6 +291,8 @@ public class GUIMk1 {
     }
 
 
+
+
     /**
      * Class which contains the main canvas
      */
@@ -439,11 +380,15 @@ public class GUIMk1 {
          */
         DrawingArea() {
             setBackground(Color.WHITE);
-
             MyMouseListener ml = new MyMouseListener();
             addMouseListener(ml);
             addMouseMotionListener(ml);
+            addMouseWheelListener(ml);
+
+
         }
+
+
 
 
         /**
@@ -455,12 +400,55 @@ public class GUIMk1 {
                     super.getPreferredSize() : new Dimension(AREA_SIZE,AREA_SIZE);
         }
 
+        private double zoomFactor = 1;
+        private double prevZoomFactor = 1;
+        private boolean zoomer;
+        private double xOffset = 0;
+        private double yOffset = 0;
+        private boolean dragger;
+        private boolean released;
+        private int xDiff;
+        private int yDiff;
+        private Point sPoint;
+        AffineTransform at = new AffineTransform();
+
         /**
          * @param graphic main graphic
          */
         @Override
         public void paintComponent(Graphics graphic) {
+
             super.paintComponent(graphic);
+            Graphics2D g2 = (Graphics2D) graphic;
+            if (zoomer) {
+                AffineTransform at = new AffineTransform();
+
+                double xRel = MouseInfo.getPointerInfo().getLocation().getX() - getLocationOnScreen().getX();
+                double yRel = MouseInfo.getPointerInfo().getLocation().getY() - getLocationOnScreen().getY();
+
+                double zoomDiv = zoomFactor / prevZoomFactor;
+
+                xOffset = (zoomDiv) * (xOffset) + (1 - zoomDiv) * xRel;
+                yOffset = (zoomDiv) * (yOffset) + (1 - zoomDiv) * yRel;
+
+                at.translate(xOffset, yOffset);
+                at.scale(zoomFactor, zoomFactor);
+                prevZoomFactor = zoomFactor;
+                g2.transform(at);
+                zoomer = false;
+            }
+
+            if (dragger) {
+                at.translate(xOffset + xDiff, yOffset + yDiff);
+                at.scale(zoomFactor, zoomFactor);
+                g2.transform(at);
+
+                if (released) {
+                    xOffset += xDiff;
+                    yOffset += yDiff;
+                    dragger = false;
+                }
+            }
 
             //  Custom code to paint all the Rectangles from the List
 
@@ -569,13 +557,12 @@ public class GUIMk1 {
 
             private Point startPoint;
             private Point pointEnd;
-
-
-
             int vertices = 0; //to store number of vertices
             //use vector instead of array because dynamic structure is required as there can be any number of vertices >= 3
             final Vector<Integer> PolyX = new Vector<>(3, 1); //to store x coordinates
             final Vector<Integer> PolyY = new Vector<>(3, 1); //to store y coordinates
+
+
 
             Polygon poly = new Polygon();
 
@@ -586,6 +573,11 @@ public class GUIMk1 {
              * @param e The specific mouse event
              */
             public void mousePressed(MouseEvent e) {
+
+                if(ToolSelect.GetTool() == "zoom/pan"){
+                    released = false;
+                    sPoint = MouseInfo.getPointerInfo().getLocation();
+                }
 
                 startPoint = e.getPoint();
                 shape = new ColoredRectangle(ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), new Rectangle(), ToolSelect.GetTool(), null);
@@ -599,6 +591,16 @@ public class GUIMk1 {
              * @param e The specific mouse event
              */
             public void mouseDragged(MouseEvent e) {
+
+                if(ToolSelect.GetTool() == "zoom/pan") {
+                    Point curPoint = e.getLocationOnScreen();
+                    xDiff = curPoint.x - sPoint.x;
+                    yDiff = curPoint.y - sPoint.y;
+
+                    dragger = true;
+                    repaint();
+                }
+
                 int x = Math.min(startPoint.x, e.getX());
                 int y = Math.min(startPoint.y, e.getY());
                 int width = Math.abs(startPoint.x - e.getX());
@@ -618,6 +620,12 @@ public class GUIMk1 {
              * @param e The specific mouse event
              */
             public void mouseReleased(MouseEvent e) {
+
+                if(ToolSelect.GetTool() == "zoom/pan"){
+                    released = true;
+                    repaint();
+                }
+
                 if(!Objects.equals(ToolSelect.GetTool(), "polygon")) {
                     if (shape.shape.width != 0 || shape.shape.height != 0) {
                         if (Objects.equals(ToolSelect.GetTool(), "line")) {
@@ -668,7 +676,23 @@ public class GUIMk1 {
 
 
             }
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
 
+                if (ToolSelect.GetTool() == "zoom/pan") {
+                    zoomer = true;
+                    //Zoom in
+                    if (e.getWheelRotation() < 0) {
+                        zoomFactor /= 1.1;
+                        repaint();
+                    }
+                    //Zoom out
+                    if (e.getWheelRotation() > 0) {
+                        zoomFactor *= 1.1;
+                        repaint();
+                    }
+                }
+            }
         }
 
         /**
