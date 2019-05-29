@@ -43,7 +43,7 @@ public class GUIMk1 {
         frame.getContentPane().add(utiltyBar, BorderLayout.WEST);
         frame.getContentPane().add(menuBar,BorderLayout.NORTH);
         frame.getContentPane().add(drawingArea);
-        frame.setSize(450, 400);
+        //frame.setSize(400, 400);
         frame.setLocationRelativeTo( null );
         frame.setVisible(true);
         frame.pack();
@@ -342,35 +342,35 @@ public class GUIMk1 {
 
                 } else if(splitStr[0].equals("LINE")){
                     shape.type = "line";
-                    shape.shape.setBounds((int)(Float.parseFloat(splitStr[1]) * 400),(int)(Float.parseFloat(splitStr[2]) * 400),
-                            (int)(Float.parseFloat(splitStr[3]) * 400),(int)(Float.parseFloat(splitStr[4]) *400));
+                    shape.shape.setBounds((int)(Float.parseFloat(splitStr[1]) * AREA_SIZE),(int)(Float.parseFloat(splitStr[2]) * AREA_SIZE),
+                            (int)(Float.parseFloat(splitStr[3]) * AREA_SIZE),(int)(Float.parseFloat(splitStr[4]) *AREA_SIZE));
                     shapes.add(shape);
 
 
                 } else if(splitStr[0].equals("PLOT")){
                     shape.type = "plot";
-                    shape.shape.setBounds((int)(Float.parseFloat(splitStr[1]) * 400),(int)(Float.parseFloat(splitStr[2]) * 400),
+                    shape.shape.setBounds((int)(Float.parseFloat(splitStr[1]) * AREA_SIZE),(int)(Float.parseFloat(splitStr[2]) * AREA_SIZE),
                             1,1);
                     shapes.add(shape);
 
                 } else if(splitStr[0].equals("RECTANGLE")){
                     shape.type = "rectangle";
-                    shape.shape.setBounds((int)(Float.parseFloat(splitStr[1]) * 200), (int)(Float.parseFloat(splitStr[2]) * 200),
-                            (int)((Float.parseFloat(splitStr[3])) * 200),
-                            (int)((Float.parseFloat(splitStr[4])) * 200));
+                    shape.shape.setBounds((int)(Float.parseFloat(splitStr[1]) * AREA_SIZE),(int)(Float.parseFloat(splitStr[2]) * AREA_SIZE),
+                            ((int)(Float.parseFloat(splitStr[3]) * AREA_SIZE)) - ((int)(Float.parseFloat(splitStr[1]) * AREA_SIZE)),
+                            ((int)(Float.parseFloat(splitStr[4]) * AREA_SIZE)) - ((int)(Float.parseFloat(splitStr[2]) * AREA_SIZE)));
                     shapes.add(shape);
 
                 } else if(splitStr[0].equals("ELLIPSE")){
                     shape.type = "ellipse";
-                    shape.shape.setBounds((int)(Float.parseFloat(splitStr[1]) * 400),(int)(Float.parseFloat(splitStr[2]) * 400),
-                            (int)(Float.parseFloat(splitStr[3]) * 400),(int)(Float.parseFloat(splitStr[4]) *400));
+                    System.out.println((int)(Float.parseFloat(splitStr[3]) * AREA_SIZE));
+                    shape.shape.setBounds((int)(Float.parseFloat(splitStr[1]) * AREA_SIZE),(int)(Float.parseFloat(splitStr[2]) * AREA_SIZE),
+                            ((int)(Float.parseFloat(splitStr[3]) * AREA_SIZE)) - ((int)(Float.parseFloat(splitStr[1]) * AREA_SIZE)),
+                            ((int)(Float.parseFloat(splitStr[4]) * AREA_SIZE)) - ((int)(Float.parseFloat(splitStr[2]) * AREA_SIZE)));
                     shapes.add(shape);
 
                 } else if(splitStr[0].equals("POLYGON")){
 
                 }
-
-
             }
             return shapes;
         }
