@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
@@ -47,6 +48,8 @@ public class GUIMk1 {
         frame.setLocationRelativeTo( null );
         frame.setVisible(true);
         frame.pack();
+        //drawingArea.repaint();
+        //frame.dispose();
     }
 
 
@@ -162,13 +165,17 @@ public class GUIMk1 {
 
         MenuBar(DrawingArea drawingArea){
             JMenuBar menuBar = new JMenuBar();
-            JButton openButton = new JButton("open");
-            JButton saveButton = new JButton("save");
-            openButton.addActionListener( this );
-            saveButton.addActionListener( this );
+            JMenuItem openButton = new JMenuItem("open");
+            JMenuItem saveButton = new JMenuItem("save");
+            JMenuItem undoButton = new JMenuItem("undo");
+            undoButton.addActionListener(this);
+            openButton.addActionListener(this);
+            saveButton.addActionListener(this);
+
 
             menuBar.add(openButton);
             menuBar.add(saveButton);
+            menuBar.add(undoButton);
             add(menuBar);
 
 
@@ -196,6 +203,10 @@ public class GUIMk1 {
 
 
                 }
+            } else if(command.equals("undo")){
+                DrawingArea.deleteLastRectangle();
+
+
             }
         }
     }
@@ -309,6 +320,11 @@ public class GUIMk1 {
             }
         }
 
+        public static void deleteLastRectangle(){
+            System.out.println(coloredRectangles.size());
+            coloredRectangles.remove(coloredRectangles.size() - 1);
+        }
+
 
         public static ArrayList<ColoredRectangle> VecToArray(File file){
             Scanner sc = null;
@@ -328,11 +344,9 @@ public class GUIMk1 {
                 String currentLine = sc.nextLine();
                 String[] splitStr = currentLine.split("\\s+");
                 if (splitStr[0].equals("PEN")){
-                    System.out.print(splitStr[1]);
                     currentLineColor = Color.decode(splitStr[1]);
 
                 } else if(splitStr[0].equals("FILL")){
-                    System.out.print(splitStr[1]);
                     if (splitStr[1].equals("OFF")){
                         currentFillColor = null;
                     } else {
@@ -362,13 +376,27 @@ public class GUIMk1 {
 
                 } else if(splitStr[0].equals("ELLIPSE")){
                     shape.type = "ellipse";
-                    System.out.println((int)(Float.parseFloat(splitStr[3]) * AREA_SIZE));
                     shape.shape.setBounds((int)(Float.parseFloat(splitStr[1]) * AREA_SIZE),(int)(Float.parseFloat(splitStr[2]) * AREA_SIZE),
                             ((int)(Float.parseFloat(splitStr[3]) * AREA_SIZE)) - ((int)(Float.parseFloat(splitStr[1]) * AREA_SIZE)),
                             ((int)(Float.parseFloat(splitStr[4]) * AREA_SIZE)) - ((int)(Float.parseFloat(splitStr[2]) * AREA_SIZE)));
                     shapes.add(shape);
 
                 } else if(splitStr[0].equals("POLYGON")){
+                    shape.type = "polygon";
+                     int[] PolyX = new int[(splitStr.length -1) / 2];
+                     int[] PolyY = new int[(splitStr.length -1) / 2];
+                    int vertices = 0;
+
+                    for (int i = 1; i < splitStr.length; i += 2){
+                        PolyX[vertices] = ((int)(Float.parseFloat(splitStr[i]) * AREA_SIZE));
+                        PolyY[vertices] = ((int)(Float.parseFloat(splitStr[i+1]) * AREA_SIZE));
+                        vertices ++;
+                    }
+                    Polygon poly = new Polygon(PolyX,PolyY,vertices);
+                    shape.poly = poly;
+                    shapes.add(shape);
+
+
 
                 }
             }
@@ -450,9 +478,7 @@ public class GUIMk1 {
                 }
             }
 
-            //  Custom code to paint all the Rectangles from the List
-
-
+            /* Custom code to paint all the Rectangles from the List */
 
             graphic.setColor(getForeground());
 
