@@ -568,7 +568,11 @@ public class GUIMk1 {
                     xOffset += xDiff;
                     yOffset += yDiff;
                     dragger = false;
+                    revalidate();
+
                 }
+
+
             }
 
             /* Custom code to paint all the Rectangles from the List */
@@ -683,7 +687,7 @@ public class GUIMk1 {
 
 
 
-            Polygon poly = new Polygon();
+
 
 
 
@@ -696,12 +700,13 @@ public class GUIMk1 {
                 if(ToolSelect.GetTool() == "zoom/pan"){
                     released = false;
                     sPoint = MouseInfo.getPointerInfo().getLocation();
-                }
+                }else {
 
-                startPoint = e.getPoint();
-                shape = new ColoredRectangle(ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), new Rectangle(), ToolSelect.GetTool(), null);
-                if (Objects.equals(ToolSelect.GetTool(), "plot") || Objects.equals(ToolSelect.GetTool(), "line")){
-                    shape.shape.setBounds(e.getX(),e.getY(),1,1);
+                    startPoint = e.getPoint();
+                    shape = new ColoredRectangle(ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), new Rectangle(), ToolSelect.GetTool(), null);
+                    if (Objects.equals(ToolSelect.GetTool(), "plot") || Objects.equals(ToolSelect.GetTool(), "line")) {
+                        shape.shape.setBounds(e.getX(), e.getY(), 1, 1);
+                    }
                 }
 
             }
@@ -718,20 +723,21 @@ public class GUIMk1 {
 
                     dragger = true;
                     repaint();
-                }
+                }else {
 
-                int x = Math.min(startPoint.x, e.getX());
-                int y = Math.min(startPoint.y, e.getY());
-                int width = Math.abs(startPoint.x - e.getX());
-                int height = Math.abs(startPoint.y - e.getY());
-                pointEnd = e.getPoint();
+                    int x = Math.min(startPoint.x, e.getX());
+                    int y = Math.min(startPoint.y, e.getY());
+                    int width = Math.abs(startPoint.x - e.getX());
+                    int height = Math.abs(startPoint.y - e.getY());
+                    pointEnd = e.getPoint();
 
-                if(!Objects.equals(ToolSelect.GetTool(), "plot") && !Objects.equals(ToolSelect.GetTool(), "line") && !Objects.equals(ToolSelect.GetTool(), "polygon")) {
-                    shape.shape.setBounds(x, y, width, height);
-                } else if (Objects.equals(ToolSelect.GetTool(), "line")){
-                    shape.shape.setBounds(startPoint.x,startPoint.y, pointEnd.x, pointEnd.y);
+                    if (!Objects.equals(ToolSelect.GetTool(), "plot") && !Objects.equals(ToolSelect.GetTool(), "line") && !Objects.equals(ToolSelect.GetTool(), "polygon")) {
+                        shape.shape.setBounds(x, y, width, height);
+                    } else if (Objects.equals(ToolSelect.GetTool(), "line")) {
+                        shape.shape.setBounds(startPoint.x, startPoint.y, pointEnd.x, pointEnd.y);
+                    }
+                    repaint();
                 }
-                repaint();
             }
 
 
@@ -743,54 +749,55 @@ public class GUIMk1 {
                 if(ToolSelect.GetTool() == "zoom/pan"){
                     released = true;
                     repaint();
-                }
-
-                if(!Objects.equals(ToolSelect.GetTool(), "polygon")) {
-                    if (shape.shape.width != 0 || shape.shape.height != 0) {
-                        if (Objects.equals(ToolSelect.GetTool(), "line")) {
-                            shape.shape.setBounds(shape.shape.x, shape.shape.y, e.getX(), e.getY());
-                        }
-                        addRectangle(shape.shape, ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), ToolSelect.GetTool(), null);
-                    }
                 }else {
 
-                    //copy coordinates from vector to array
-                    /*
-
-                    */
-
-                    if(SwingUtilities.isLeftMouseButton(e)){
-                        PolyX.addElement(e.getX());
-                        PolyY.addElement(e.getY());
-                        vertices++;
-                        shape.shape.setBounds(e.getX(),e.getY(),1,1);
-                        addRectangle(shape.shape, ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), ToolSelect.GetTool(), null            );
-
-                    } else if (SwingUtilities.isRightMouseButton(e)){
-
-                        int[] xPoints = new int[PolyX.size()];
-                        int[] yPoints = new int[PolyY.size()];
-
-
-                        for (int i = 0; i < vertices; i++) {
-                            xPoints[i] = PolyX.elementAt(i);
+                    if (!Objects.equals(ToolSelect.GetTool(), "polygon")) {
+                        if (shape.shape.width != 0 || shape.shape.height != 0) {
+                            if (Objects.equals(ToolSelect.GetTool(), "line")) {
+                                shape.shape.setBounds(shape.shape.x, shape.shape.y, e.getX(), e.getY());
+                            }
+                            addRectangle(shape.shape, ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), ToolSelect.GetTool(), null);
                         }
-                        for (int i = 0; i < vertices; i++) {
-                            yPoints[i] = PolyY.elementAt(i);
-                            shape.shape.setBounds(xPoints[i],yPoints[i],vertices,vertices);
-                        }
-                        Polygon poly = new Polygon(xPoints,yPoints,vertices);
-                        shape.poly = poly;
+                    } else {
 
-                        PolyX.clear();
-                        PolyY.clear();
-                        vertices = 0;
+                        //copy coordinates from vector to array
+                        /*
+
+                         */
+
+                        if (SwingUtilities.isLeftMouseButton(e)) {
+                            PolyX.addElement(e.getX());
+                            PolyY.addElement(e.getY());
+                            vertices++;
+                            shape.shape.setBounds(e.getX(), e.getY(), 1, 1);
+                            addRectangle(shape.shape, ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), ToolSelect.GetTool(), null);
+
+                        } else if (SwingUtilities.isRightMouseButton(e)) {
+
+                            int[] xPoints = new int[PolyX.size()];
+                            int[] yPoints = new int[PolyY.size()];
+
+
+                            for (int i = 0; i < vertices; i++) {
+                                xPoints[i] = PolyX.elementAt(i);
+                            }
+                            for (int i = 0; i < vertices; i++) {
+                                yPoints[i] = PolyY.elementAt(i);
+                                shape.shape.setBounds(xPoints[i], yPoints[i], vertices, vertices);
+                            }
+                            Polygon poly = new Polygon(xPoints, yPoints, vertices);
+                            shape.poly = poly;
+
+                            PolyX.clear();
+                            PolyY.clear();
+                            vertices = 0;
+
+                        }
+                        addRectangle(shape.shape, ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), ToolSelect.GetTool(), shape.poly);
 
                     }
-                    addRectangle(shape.shape,ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), ToolSelect.GetTool(), shape.poly);
-
+                    shape = null;
                 }
-                shape = null;
 
 
 
