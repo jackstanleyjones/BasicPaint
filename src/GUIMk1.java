@@ -183,11 +183,11 @@ public class GUIMk1 {
         public void actionPerformed(ActionEvent e) {
             String command = e.getActionCommand();
 
-            if(command.equals("open")){
+            if(command.equals("open")) {
                 JFileChooser openFileChooser = new JFileChooser();
                 openFileChooser.setAcceptAllFileFilterUsed(false);
 
-                FileNameExtensionFilter fileFilter = new FileNameExtensionFilter("VEC Files","vec");
+                FileNameExtensionFilter fileFilter = new FileNameExtensionFilter("VEC Files", "vec");
                 openFileChooser.addChoosableFileFilter(fileFilter);
 
                 int dialog = openFileChooser.showOpenDialog(null);
@@ -200,9 +200,24 @@ public class GUIMk1 {
                     } catch (FileNotFoundException e1) {
                     }
                     DrawingArea.setColoredRectangles(DrawingArea.VecToArray(newFile));
-
-
                 }
+            } else if(command.equals("save")){
+                JFileChooser saveFileChooser = new JFileChooser();
+                saveFileChooser.setAcceptAllFileFilterUsed(false);
+
+                FileNameExtensionFilter fileFilter = new FileNameExtensionFilter("VEC Files", "vec");
+                saveFileChooser.addChoosableFileFilter(fileFilter);
+
+                int dialog = saveFileChooser.showOpenDialog(null);
+                if(dialog == JFileChooser.APPROVE_OPTION) {
+                    try {
+                        DrawingArea.ArrayToVec(DrawingArea.getColoredRectangles(), saveFileChooser.getSelectedFile());
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+
+
             } else if(command.equals("undo")){
                 DrawingArea.deleteLastRectangle();
 
@@ -323,6 +338,13 @@ public class GUIMk1 {
         public static void deleteLastRectangle(){
             System.out.println(coloredRectangles.size());
             coloredRectangles.remove(coloredRectangles.size() - 1);
+            //revalidate();
+        }
+
+        public static ArrayList<ColoredRectangle> getColoredRectangles(){
+            if (!(coloredRectangles.size() == 0)) {
+                return coloredRectangles;
+            } else return null;
         }
 
 
@@ -402,6 +424,77 @@ public class GUIMk1 {
             }
             return shapes;
         }
+
+        public static void ArrayToVec(ArrayList<ColoredRectangle> array, File file) throws IOException{
+            FileWriter newFile = new FileWriter(file + ".vec");
+            Color currentBorderColor = null;
+            Color currentFillColor = null;
+
+            for (ColoredRectangle cr : array){
+                System.out.print(cr);
+                String fillColor;
+                String borderColor;
+                Rectangle currentRectangle = cr.getRectangle();
+                if (!(cr.fill == currentFillColor)){
+                    //if (cr.fill.equals(null)){
+                    //    fillColor = "FILL OFF";
+                    //} else {
+                        fillColor = "FILL " + "#" + Integer.toHexString(cr.fill.getRGB()).substring(2);
+                    //}
+                    currentFillColor = cr.fill;
+                    newFile.write(fillColor + System.lineSeparator());
+                }
+
+                if (!cr.border.equals(currentBorderColor)){
+                    borderColor = "PEN " + "#" + Integer.toHexString(cr.border.getRGB()).substring(2);
+                    currentBorderColor = cr.border;
+                    newFile.write(borderColor+ System.lineSeparator());
+                }
+
+                if (cr.type.equals("plot")){
+                    String plot = "PLOT " + ((float)currentRectangle.x / AREA_SIZE)
+                            + " " + ((float)currentRectangle.y / AREA_SIZE);
+                    newFile.write(plot + System.lineSeparator());
+                }
+
+                else if(cr.type.equals("line")){
+                    String line = "LINE " + ((float)currentRectangle.x / AREA_SIZE)
+                            + " " + ((float)currentRectangle.y  / AREA_SIZE)
+                            + " " + ((float)currentRectangle.width / AREA_SIZE)
+                            + " " + ((float)currentRectangle.height / AREA_SIZE);
+                    newFile.write(line + System.lineSeparator());
+                }
+                else if(cr.type.equals("rectangle")){
+                    String rectangle = "RECTANGLE " + ((float)currentRectangle.x / AREA_SIZE)
+                            + " " + ((float)currentRectangle.y  / AREA_SIZE)
+                            + " " + (((float)currentRectangle.width / AREA_SIZE) + ((float)currentRectangle.x / AREA_SIZE))
+                            + " " + (((float)currentRectangle.height / AREA_SIZE) + ((float)currentRectangle.y  / AREA_SIZE));
+                    newFile.write(rectangle + System.lineSeparator());
+                }
+                else if(cr.type.equals("ellipse")){
+                    String ellipse = "ELLIPSE " + ((float)currentRectangle.x / AREA_SIZE)
+                            + " " + ((float)currentRectangle.y  / AREA_SIZE)
+                            + " " + (((float)currentRectangle.width / AREA_SIZE) + ((float)currentRectangle.x / AREA_SIZE))
+                            + " " + (((float)currentRectangle.height / AREA_SIZE) + ((float)currentRectangle.y  / AREA_SIZE));
+                    newFile.write(ellipse + System.lineSeparator());
+                }
+                else if(cr.type.equals("polygon")){
+                    Polygon currentPoly = cr.poly;
+                    if(currentPoly != null) {
+                        String polygon = "POLYGON";
+                        for (int i = 0; i < currentPoly.xpoints.length; i++) {
+                            String point = " " + ((float)currentPoly.xpoints[i] / AREA_SIZE)
+                                    + " " + ((float)currentPoly.ypoints[i] / AREA_SIZE);
+                            polygon += point;
+                        }
+                        newFile.write(polygon + System.lineSeparator());
+                    }
+                }
+
+            }
+            newFile.close();
+        }
+
 
         /**
          * A new drawing area
