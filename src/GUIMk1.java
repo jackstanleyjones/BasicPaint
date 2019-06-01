@@ -44,6 +44,22 @@ public class GUIMk1 {
         frame.getContentPane().add(utiltyBar, BorderLayout.WEST);
         frame.getContentPane().add(menuBar,BorderLayout.NORTH);
         frame.getContentPane().add(drawingArea);
+        frame.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyTyped(KeyEvent e) { }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if ((e.getKeyCode() == KeyEvent.VK_Z) && ((e.getKeyChar() & KeyEvent.CTRL_DOWN_MASK) != 0)) {
+                    DrawingArea.deleteLastRectangle();
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) { }
+
+        });
         //frame.setSize(400, 400);
         frame.setLocationRelativeTo( null );
         frame.setVisible(true);
@@ -205,11 +221,13 @@ public class GUIMk1 {
                 }
             } else if(command.equals("undo")){
                 DrawingArea.deleteLastRectangle();
+                repaint();
 
 
             }
         }
     }
+
 
 
 
@@ -320,10 +338,7 @@ public class GUIMk1 {
             }
         }
 
-        public static void deleteLastRectangle(){
-            System.out.println(coloredRectangles.size());
-            coloredRectangles.remove(coloredRectangles.size() - 1);
-        }
+
 
 
         public static ArrayList<ColoredRectangle> VecToArray(File file){
@@ -414,6 +429,7 @@ public class GUIMk1 {
             addMouseWheelListener(ml);
 
 
+
         }
 
 
@@ -448,7 +464,7 @@ public class GUIMk1 {
 
             super.paintComponent(graphic);
             Graphics2D g2 = (Graphics2D) graphic;
-            if (zoomer) {
+            if (this.zoomer) {
                 AffineTransform at = new AffineTransform();
 
                 double xRel = MouseInfo.getPointerInfo().getLocation().getX() - getLocationOnScreen().getX();
@@ -456,14 +472,14 @@ public class GUIMk1 {
 
                 double zoomDiv = zoomFactor / prevZoomFactor;
 
-                xOffset = (zoomDiv) * (xOffset) + (1 - zoomDiv) * xRel;
-                yOffset = (zoomDiv) * (yOffset) + (1 - zoomDiv) * yRel;
+                this.xOffset = (zoomDiv) * (xOffset) + (1 - zoomDiv) * xRel;
+                this.yOffset = (zoomDiv) * (yOffset) + (1 - zoomDiv) * yRel;
 
                 at.translate(xOffset, yOffset);
                 at.scale(zoomFactor, zoomFactor);
-                prevZoomFactor = zoomFactor;
+                this.prevZoomFactor = zoomFactor;
                 g2.transform(at);
-                zoomer = false;
+                this.zoomer = false;
             }
 
             if (dragger) {
@@ -472,15 +488,13 @@ public class GUIMk1 {
                 g2.transform(at);
 
                 if (released) {
-                    xOffset += xDiff;
-                    yOffset += yDiff;
-                    dragger = false;
-                    revalidate();
-
+                    this.xOffset += xDiff;
+                    this.yOffset += yDiff;
+                    this.dragger = false;
                 }
-
-
+                revalidate();
             }
+
 
             /* Custom code to paint all the Rectangles from the List */
 
@@ -579,6 +593,12 @@ public class GUIMk1 {
 
         }
 
+        public static void deleteLastRectangle(){
+            coloredRectangles.remove(coloredRectangles.size() - 1);
+            System.out.println(coloredRectangles.size());
+
+        }
+
 
         /**
          * Class that checks for any mouse action in the canvas
@@ -607,6 +627,7 @@ public class GUIMk1 {
                 if(ToolSelect.GetTool() == "zoom/pan"){
                     released = false;
                     sPoint = MouseInfo.getPointerInfo().getLocation();
+                    repaint();
                 }else {
 
                     startPoint = e.getPoint();
@@ -627,9 +648,9 @@ public class GUIMk1 {
                     Point curPoint = e.getLocationOnScreen();
                     xDiff = curPoint.x - sPoint.x;
                     yDiff = curPoint.y - sPoint.y;
-
-                    dragger = true;
                     repaint();
+                    dragger = true;
+
                 }else {
 
                     int x = Math.min(startPoint.x, e.getX());
@@ -652,6 +673,12 @@ public class GUIMk1 {
              * @param e The specific mouse event
              */
             public void mouseReleased(MouseEvent e) {
+                /*
+                if(MenuBar.command.equals("undo")){
+                    repaint();
+                }
+                */
+
 
                 if(ToolSelect.GetTool() == "zoom/pan"){
                     released = true;
