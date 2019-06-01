@@ -44,22 +44,7 @@ public class GUIMk1 {
         frame.getContentPane().add(utiltyBar, BorderLayout.WEST);
         frame.getContentPane().add(menuBar,BorderLayout.NORTH);
         frame.getContentPane().add(drawingArea);
-        frame.addKeyListener(new KeyListener() {
 
-            @Override
-            public void keyTyped(KeyEvent e) { }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if ((e.getKeyCode() == KeyEvent.VK_Z) && ((e.getKeyChar() & KeyEvent.CTRL_DOWN_MASK) != 0)) {
-                    DrawingArea.deleteLastRectangle();
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) { }
-
-        });
         //frame.setSize(400, 400);
         frame.setLocationRelativeTo( null );
         frame.setVisible(true);
@@ -184,6 +169,9 @@ public class GUIMk1 {
             JMenuItem openButton = new JMenuItem("open");
             JMenuItem saveButton = new JMenuItem("save");
             JMenuItem undoButton = new JMenuItem("undo");
+            undoButton.setAccelerator(KeyStroke.getKeyStroke(
+                    KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
+
             undoButton.addActionListener(this);
             openButton.addActionListener(this);
             saveButton.addActionListener(this);
@@ -503,7 +491,7 @@ public class GUIMk1 {
                         String polygon = "POLYGON";
                         for (int i = 0; i < currentPoly.xpoints.length; i++) {
                             String point = " " + ((float)currentPoly.xpoints[i] / AREA_SIZE)
-                                    + " " + ((float)currentPoly.ypoints[i] / AREA_SIZE);
+                                    + " " + ((float)currentPoly.ypoints[i]       / AREA_SIZE);
                             polygon += point;
                         }
                         newFile.write(polygon + System.lineSeparator());
