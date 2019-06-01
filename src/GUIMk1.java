@@ -199,11 +199,11 @@ public class GUIMk1 {
         public void actionPerformed(ActionEvent e) {
             String command = e.getActionCommand();
 
-            if(command.equals("open")){
+            if(command.equals("open")) {
                 JFileChooser openFileChooser = new JFileChooser();
                 openFileChooser.setAcceptAllFileFilterUsed(false);
 
-                FileNameExtensionFilter fileFilter = new FileNameExtensionFilter("VEC Files","vec");
+                FileNameExtensionFilter fileFilter = new FileNameExtensionFilter("VEC Files", "vec");
                 openFileChooser.addChoosableFileFilter(fileFilter);
 
                 int dialog = openFileChooser.showOpenDialog(null);
@@ -216,9 +216,24 @@ public class GUIMk1 {
                     } catch (FileNotFoundException e1) {
                     }
                     DrawingArea.setColoredRectangles(DrawingArea.VecToArray(newFile));
-
-
                 }
+            } else if(command.equals("save")){
+                JFileChooser saveFileChooser = new JFileChooser();
+                saveFileChooser.setAcceptAllFileFilterUsed(false);
+
+                FileNameExtensionFilter fileFilter = new FileNameExtensionFilter("VEC Files", "vec");
+                saveFileChooser.addChoosableFileFilter(fileFilter);
+
+                int dialog = saveFileChooser.showOpenDialog(null);
+                if(dialog == JFileChooser.APPROVE_OPTION) {
+                    try {
+                        DrawingArea.ArrayToVec(DrawingArea.getColoredRectangles(), saveFileChooser.getSelectedFile());
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+
+
             } else if(command.equals("undo")){
                 DrawingArea.deleteLastRectangle();
                 repaint();
@@ -339,6 +354,17 @@ public class GUIMk1 {
         }
 
 
+        public static void deleteLastRectangle(){
+            System.out.println(coloredRectangles.size());
+            coloredRectangles.remove(coloredRectangles.size() - 1);
+            //revalidate();
+        }
+
+        public static ArrayList<ColoredRectangle> getColoredRectangles(){
+            if (!(coloredRectangles.size() == 0)) {
+                return coloredRectangles;
+            } else return null;
+        }
 
 
         public static ArrayList<ColoredRectangle> VecToArray(File file){
@@ -418,6 +444,77 @@ public class GUIMk1 {
             return shapes;
         }
 
+        public static void ArrayToVec(ArrayList<ColoredRectangle> array, File file) throws IOException{
+            FileWriter newFile = new FileWriter(file + ".vec");
+            Color currentBorderColor = null;
+            Color currentFillColor = null;
+
+            for (ColoredRectangle cr : array){
+                System.out.print(cr);
+                String fillColor;
+                String borderColor;
+                Rectangle currentRectangle = cr.getRectangle();
+                if (!(cr.fill == currentFillColor)){
+                    //if (cr.fill.equals(null)){
+                    //    fillColor = "FILL OFF";
+                    //} else {
+                        fillColor = "FILL " + "#" + Integer.toHexString(cr.fill.getRGB()).substring(2);
+                    //}
+                    currentFillColor = cr.fill;
+                    newFile.write(fillColor + System.lineSeparator());
+                }
+
+                if (!cr.border.equals(currentBorderColor)){
+                    borderColor = "PEN " + "#" + Integer.toHexString(cr.border.getRGB()).substring(2);
+                    currentBorderColor = cr.border;
+                    newFile.write(borderColor+ System.lineSeparator());
+                }
+
+                if (cr.type.equals("plot")){
+                    String plot = "PLOT " + ((float)currentRectangle.x / AREA_SIZE)
+                            + " " + ((float)currentRectangle.y / AREA_SIZE);
+                    newFile.write(plot + System.lineSeparator());
+                }
+
+                else if(cr.type.equals("line")){
+                    String line = "LINE " + ((float)currentRectangle.x / AREA_SIZE)
+                            + " " + ((float)currentRectangle.y  / AREA_SIZE)
+                            + " " + ((float)currentRectangle.width / AREA_SIZE)
+                            + " " + ((float)currentRectangle.height / AREA_SIZE);
+                    newFile.write(line + System.lineSeparator());
+                }
+                else if(cr.type.equals("rectangle")){
+                    String rectangle = "RECTANGLE " + ((float)currentRectangle.x / AREA_SIZE)
+                            + " " + ((float)currentRectangle.y  / AREA_SIZE)
+                            + " " + (((float)currentRectangle.width / AREA_SIZE) + ((float)currentRectangle.x / AREA_SIZE))
+                            + " " + (((float)currentRectangle.height / AREA_SIZE) + ((float)currentRectangle.y  / AREA_SIZE));
+                    newFile.write(rectangle + System.lineSeparator());
+                }
+                else if(cr.type.equals("ellipse")){
+                    String ellipse = "ELLIPSE " + ((float)currentRectangle.x / AREA_SIZE)
+                            + " " + ((float)currentRectangle.y  / AREA_SIZE)
+                            + " " + (((float)currentRectangle.width / AREA_SIZE) + ((float)currentRectangle.x / AREA_SIZE))
+                            + " " + (((float)currentRectangle.height / AREA_SIZE) + ((float)currentRectangle.y  / AREA_SIZE));
+                    newFile.write(ellipse + System.lineSeparator());
+                }
+                else if(cr.type.equals("polygon")){
+                    Polygon currentPoly = cr.poly;
+                    if(currentPoly != null) {
+                        String polygon = "POLYGON";
+                        for (int i = 0; i < currentPoly.xpoints.length; i++) {
+                            String point = " " + ((float)currentPoly.xpoints[i] / AREA_SIZE)
+                                    + " " + ((float)currentPoly.ypoints[i] / AREA_SIZE);
+                            polygon += point;
+                        }
+                        newFile.write(polygon + System.lineSeparator());
+                    }
+                }
+
+            }
+            newFile.close();
+        }
+
+
         /**
          * A new drawing area
          */
@@ -464,7 +561,7 @@ public class GUIMk1 {
 
             super.paintComponent(graphic);
             Graphics2D g2 = (Graphics2D) graphic;
-            if (this.zoomer) {
+            if (zoomer) {
                 AffineTransform at = new AffineTransform();
 
                 double xRel = MouseInfo.getPointerInfo().getLocation().getX() - getLocationOnScreen().getX();
@@ -472,14 +569,14 @@ public class GUIMk1 {
 
                 double zoomDiv = zoomFactor / prevZoomFactor;
 
-                this.xOffset = (zoomDiv) * (xOffset) + (1 - zoomDiv) * xRel;
-                this.yOffset = (zoomDiv) * (yOffset) + (1 - zoomDiv) * yRel;
+                xOffset = (zoomDiv) * (xOffset) + (1 - zoomDiv) * xRel;
+                yOffset = (zoomDiv) * (yOffset) + (1 - zoomDiv) * yRel;
 
                 at.translate(xOffset, yOffset);
                 at.scale(zoomFactor, zoomFactor);
-                this.prevZoomFactor = zoomFactor;
+                prevZoomFactor = zoomFactor;
                 g2.transform(at);
-                this.zoomer = false;
+                zoomer = false;
             }
 
             if (dragger) {
@@ -488,13 +585,15 @@ public class GUIMk1 {
                 g2.transform(at);
 
                 if (released) {
-                    this.xOffset += xDiff;
-                    this.yOffset += yDiff;
-                    this.dragger = false;
-                }
-                revalidate();
-            }
+                    xOffset += xDiff;
+                    yOffset += yDiff;
+                    dragger = false;
+                    revalidate();
 
+                }
+
+
+            }
 
             /* Custom code to paint all the Rectangles from the List */
 
@@ -593,12 +692,6 @@ public class GUIMk1 {
 
         }
 
-        public static void deleteLastRectangle(){
-            coloredRectangles.remove(coloredRectangles.size() - 1);
-            System.out.println(coloredRectangles.size());
-
-        }
-
 
         /**
          * Class that checks for any mouse action in the canvas
@@ -627,7 +720,6 @@ public class GUIMk1 {
                 if(ToolSelect.GetTool() == "zoom/pan"){
                     released = false;
                     sPoint = MouseInfo.getPointerInfo().getLocation();
-                    repaint();
                 }else {
 
                     startPoint = e.getPoint();
@@ -648,9 +740,9 @@ public class GUIMk1 {
                     Point curPoint = e.getLocationOnScreen();
                     xDiff = curPoint.x - sPoint.x;
                     yDiff = curPoint.y - sPoint.y;
-                    repaint();
-                    dragger = true;
 
+                    dragger = true;
+                    repaint();
                 }else {
 
                     int x = Math.min(startPoint.x, e.getX());
@@ -673,12 +765,6 @@ public class GUIMk1 {
              * @param e The specific mouse event
              */
             public void mouseReleased(MouseEvent e) {
-                /*
-                if(MenuBar.command.equals("undo")){
-                    repaint();
-                }
-                */
-
 
                 if(ToolSelect.GetTool() == "zoom/pan"){
                     released = true;
