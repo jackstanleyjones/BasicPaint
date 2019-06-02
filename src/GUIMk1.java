@@ -16,7 +16,6 @@ import javax.swing.filechooser.*;
 import java.io.*;
 import java.util.List;
 
-import static javax.swing.KeyStroke.getKeyStroke;
 
 
 public class GUIMk1 {
@@ -38,10 +37,8 @@ public class GUIMk1 {
         DrawingArea drawingArea = new DrawingArea();
         ToolSelect utiltyBar = new ToolSelect(drawingArea);
         MenuBar menuBar = new MenuBar(drawingArea);
-        JTextField textField = new JTextField();
         JFrame.setDefaultLookAndFeelDecorated(true);
         JFrame frame = new JFrame("GUIMk1");
-        frame.addKeyListener(new Keychecker());
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
         frame.setLayout(new BorderLayout());
         frame.getContentPane().add(utiltyBar, BorderLayout.WEST);
@@ -56,7 +53,6 @@ public class GUIMk1 {
         //drawingArea.repaint();
         //frame.dispose();.//
     }
-
 
 
 
@@ -178,6 +174,9 @@ public class GUIMk1 {
             JMenuItem openButton = new JMenuItem("open");
             JMenuItem saveButton = new JMenuItem("save");
             JMenuItem undoButton = new JMenuItem("undo");
+            undoButton.setAccelerator(KeyStroke.getKeyStroke(
+                    KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
+
             undoButton.addActionListener(this);
             openButton.addActionListener(this);
             saveButton.addActionListener(this);
@@ -191,8 +190,6 @@ public class GUIMk1 {
 
         }
         public void actionPerformed(ActionEvent e) {
-
-
             String command = e.getActionCommand();
 
             if(command.equals("open")) {
@@ -520,6 +517,7 @@ public class GUIMk1 {
             addMouseListener(ml);
             addMouseMotionListener(ml);
             addMouseWheelListener(ml);
+
 
 
         }
