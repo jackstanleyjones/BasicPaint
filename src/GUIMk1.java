@@ -168,6 +168,9 @@ public class GUIMk1 {
         }
     }
 
+    /**
+     *
+     */
     static class MenuBar extends JPanel implements ActionListener{
 
         MenuBar(DrawingArea drawingArea){
@@ -190,6 +193,10 @@ public class GUIMk1 {
 
 
         }
+
+        /**
+         * @param e a user action
+         */
         public void actionPerformed(ActionEvent e) {
             String command = e.getActionCommand();
 
@@ -339,6 +346,9 @@ public class GUIMk1 {
         public static final ArrayList<ColoredRectangle> coloredRectangles = new ArrayList<>();
         private ColoredRectangle shape = new ColoredRectangle(ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), new Rectangle(), ToolSelect.GetTool(), null);
 
+        /**
+         * @param rectangles the current array of all shapes
+         */
         public static void setColoredRectangles(ArrayList<ColoredRectangle> rectangles){
             for (ColoredRectangle cr : rectangles) {
 
@@ -348,12 +358,18 @@ public class GUIMk1 {
         }
 
 
+        /**
+         * deletes the last drawn rectangle
+         */
         public static void deleteLastRectangle(){
             System.out.println(coloredRectangles.size());
             coloredRectangles.remove(coloredRectangles.size() - 1);
             //revalidate();
         }
 
+        /**
+         * @return coloredRectangles, the current arry of all rectangles drawn
+         */
         public static ArrayList<ColoredRectangle> getColoredRectangles(){
             if (!(coloredRectangles.size() == 0)) {
                 return coloredRectangles;
@@ -361,6 +377,10 @@ public class GUIMk1 {
         }
 
 
+        /**
+         * @param file a VEC file with drawing instructions
+         * @return shapeArray, the shapes specified by the VEC file in an array
+         */
         public static ArrayList<ColoredRectangle> VecToArray(File file){
             Scanner sc = null;
             try {
@@ -438,6 +458,11 @@ public class GUIMk1 {
             return shapes;
         }
 
+        /**
+         * @param array the current array of all shapes
+         * @param file a VEC file with instructions to draw all shapes
+         * @throws IOException
+         */
         public static void ArrayToVec(ArrayList<ColoredRectangle> array, File file) throws IOException{
             FileWriter newFile = new FileWriter(file + ".vec");
             Color currentBorderColor = null;
@@ -816,6 +841,10 @@ public class GUIMk1 {
 
 
             }
+
+            /**
+             * @param e a mousewheel action
+             */
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
 
@@ -836,7 +865,7 @@ public class GUIMk1 {
         }
 
         /**
-         *
+         * a single shape
          */
         static class ColoredRectangle {
             private Color border;
