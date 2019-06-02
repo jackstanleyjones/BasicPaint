@@ -30,8 +30,8 @@ public class GUIMk1 {
      */
     private static void createGUI(){
         DrawingArea drawingArea = new DrawingArea();
-        ToolSelect utilityBar = new ToolSelect(drawingArea);
-        MenuBar menuBar = new MenuBar(drawingArea);
+        ToolSelect utilityBar = new ToolSelect();
+        MenuBar menuBar = new MenuBar();
         JFrame.setDefaultLookAndFeelDecorated(true);
         JFrame frame = new JFrame("GUIMk1");
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
@@ -57,13 +57,9 @@ public class GUIMk1 {
         static Color borderColor = Color.BLACK;
         static Color fillColor = null;
 
-        private final DrawingArea drawingArea;
-
         /**
-         * @param drawingArea the main canvas of the application
          */
-        ToolSelect(DrawingArea drawingArea){
-            this.drawingArea = drawingArea;
+        ToolSelect(){
             JToolBar toolbar  = new JToolBar(null, JToolBar.VERTICAL);
             JLabel penLabel = new JLabel("Pen colour:");
             JLabel fillLabel = new JLabel("Fill Colour:");
@@ -163,13 +159,13 @@ public class GUIMk1 {
      */
     static class MenuBar extends JPanel implements ActionListener{
 
-        MenuBar(DrawingArea drawingArea){
+        MenuBar(){
             JMenuBar menuBar = new JMenuBar();
             JMenuItem openButton = new JMenuItem("open");
             JMenuItem saveButton = new JMenuItem("save");
             JMenuItem undoButton = new JMenuItem("undo");
             undoButton.setAccelerator(KeyStroke.getKeyStroke(
-                    KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
+                    KeyEvent.VK_Z, InputEvent.CTRL_MASK));
 
             undoButton.addActionListener(this);
             openButton.addActionListener(this);
@@ -190,46 +186,52 @@ public class GUIMk1 {
         public void actionPerformed(ActionEvent e) {
             String command = e.getActionCommand();
 
-            if(command.equals("open")) {
-                JFileChooser openFileChooser = new JFileChooser();
-                openFileChooser.setAcceptAllFileFilterUsed(false);
+            switch (command) {
+                case "open": {
+                    JFileChooser openFileChooser = new JFileChooser();
+                    openFileChooser.setAcceptAllFileFilterUsed(false);
 
-                FileNameExtensionFilter fileFilter = new FileNameExtensionFilter("VEC Files", "vec");
-                openFileChooser.addChoosableFileFilter(fileFilter);
+                    FileNameExtensionFilter fileFilter = new FileNameExtensionFilter("VEC Files", "vec");
+                    openFileChooser.addChoosableFileFilter(fileFilter);
 
-                int dialog = openFileChooser.showOpenDialog(null);
-                if (dialog == JFileChooser.APPROVE_OPTION) {
-                    System.out.print(openFileChooser.getSelectedFile().getAbsolutePath());
-                    File newFile = openFileChooser.getSelectedFile();
-                    Scanner sc = null;
-                    try {
-                        sc = new Scanner(newFile);
-                    } catch (FileNotFoundException e1) {
+                    int dialog = openFileChooser.showOpenDialog(null);
+                    if (dialog == JFileChooser.APPROVE_OPTION) {
+                        System.out.print(openFileChooser.getSelectedFile().getAbsolutePath());
+                        File newFile = openFileChooser.getSelectedFile();
+                        Scanner sc = null;
+                        try {
+                            sc = new Scanner(newFile);
+                        } catch (FileNotFoundException e1) {
+                        }
+                        DrawingArea.setColoredRectangles(DrawingArea.VecToArray(newFile));
                     }
-                    DrawingArea.setColoredRectangles(DrawingArea.VecToArray(newFile));
+                    break;
                 }
-            } else if(command.equals("save")){
-                JFileChooser saveFileChooser = new JFileChooser();
-                saveFileChooser.setAcceptAllFileFilterUsed(false);
+                case "save": {
+                    JFileChooser saveFileChooser = new JFileChooser();
+                    saveFileChooser.setAcceptAllFileFilterUsed(false);
 
-                FileNameExtensionFilter fileFilter = new FileNameExtensionFilter("VEC Files", "vec");
-                saveFileChooser.addChoosableFileFilter(fileFilter);
+                    FileNameExtensionFilter fileFilter = new FileNameExtensionFilter("VEC Files", "vec");
+                    saveFileChooser.addChoosableFileFilter(fileFilter);
 
-                int dialog = saveFileChooser.showOpenDialog(null);
-                if(dialog == JFileChooser.APPROVE_OPTION) {
-                    try {
-                        DrawingArea.ArrayToVec(DrawingArea.getColoredRectangles(), saveFileChooser.getSelectedFile());
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
+                    int dialog = saveFileChooser.showOpenDialog(null);
+                    if (dialog == JFileChooser.APPROVE_OPTION) {
+                        try {
+                            DrawingArea.ArrayToVec(Objects.requireNonNull(DrawingArea.getColoredRectangles()), saveFileChooser.getSelectedFile());
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
                     }
+
+
+                    break;
                 }
+                case "undo":
+                    DrawingArea.deleteLastRectangle();
+                    repaint();
 
 
-            } else if(command.equals("undo")){
-                DrawingArea.deleteLastRectangle();
-                repaint();
-
-
+                    break;
             }
         }
     }
@@ -258,13 +260,6 @@ public class GUIMk1 {
         }
 
         /**
-         * @return current - currently selected color
-         */
-        public Color getSelectedColor() {
-            return current;
-        }
-
-        /**
          * @param newColor new selected color
          */
         void setSelectedColor(Color newColor) {
@@ -280,7 +275,7 @@ public class GUIMk1 {
             if (newColor == null) return;
 
             current = newColor;
-            setIcon(createIcon(current, 16, 16));
+            setIcon(createIcon(current));
             repaint();
 
             if (notify) {
@@ -309,17 +304,15 @@ public class GUIMk1 {
 
         /**
          * @param main main color of icon
-         * @param width width of the icon
-         * @param height height of the icon
          * @return ImageIcon(image) a new icon for a button
          */
-        ImageIcon createIcon(Color main, int width, int height) {
-            BufferedImage image = new BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
+        ImageIcon createIcon(Color main) {
+            BufferedImage image = new BufferedImage(16, 16, java.awt.image.BufferedImage.TYPE_INT_RGB);
             Graphics2D graphics = image.createGraphics();
             graphics.setColor(main);
-            graphics.fillRect(0, 0, width, height);
+            graphics.fillRect(0, 0, 16, 16);
             graphics.setXORMode(Color.DARK_GRAY);
-            graphics.drawRect(0, 0, width-1, height-1);
+            graphics.drawRect(0, 0, 16 -1, 16 -1);
             image.flush();
             return new ImageIcon(image);
         }
@@ -333,25 +326,21 @@ public class GUIMk1 {
      */
     static class DrawingArea extends JPanel {
         private final static int AREA_SIZE = 400;
-        public static final ArrayList<ColoredRectangle> coloredRectangles = new ArrayList<>();
+        static final ArrayList<ColoredRectangle> coloredRectangles = new ArrayList<>();
         private ColoredRectangle shape = new ColoredRectangle(ToolSelect.GetBorderColor(), ToolSelect.GetFillColor(), new Rectangle(), ToolSelect.GetTool(), null);
 
         /**
          * @param rectangles the current array of all shapes
          */
-        public static void setColoredRectangles(ArrayList<ColoredRectangle> rectangles){
-            for (ColoredRectangle cr : rectangles) {
-
-
-                coloredRectangles.add(cr);
-            }
+        static void setColoredRectangles(ArrayList<ColoredRectangle> rectangles){
+            coloredRectangles.addAll(rectangles);
         }
 
 
         /**
          * deletes the last drawn rectangle
          */
-        public static void deleteLastRectangle(){
+        static void deleteLastRectangle(){
             System.out.println(coloredRectangles.size());
             coloredRectangles.remove(coloredRectangles.size() - 1);
             //revalidate();
@@ -360,7 +349,7 @@ public class GUIMk1 {
         /**
          * @return coloredRectangles, the current arry of all rectangles drawn
          */
-        public static ArrayList<ColoredRectangle> getColoredRectangles(){
+        static ArrayList<ColoredRectangle> getColoredRectangles(){
             if (!(coloredRectangles.size() == 0)) {
                 return coloredRectangles;
             } else return null;
@@ -371,11 +360,11 @@ public class GUIMk1 {
          * @param file a VEC file with drawing instructions
          * @return shapeArray, the shapes specified by the VEC file in an array
          */
-        public static ArrayList<ColoredRectangle> VecToArray(File file){
+        static ArrayList<ColoredRectangle> VecToArray(File file){
             Scanner sc = null;
             try {
                 sc = new Scanner(file);
-            } catch (FileNotFoundException e1) {
+            } catch (FileNotFoundException ignored) {
             }
 
             Color currentLineColor = Color.BLACK;
@@ -383,66 +372,73 @@ public class GUIMk1 {
 
             ArrayList<ColoredRectangle> shapes = new ArrayList<>();
 
-            while (sc.hasNextLine()) {
+            while (Objects.requireNonNull(sc).hasNextLine()) {
 
                 ColoredRectangle shape = new ColoredRectangle(currentLineColor, currentFillColor, new Rectangle(), null, null);
                 String currentLine = sc.nextLine();
                 String[] splitStr = currentLine.split("\\s+");
-                if (splitStr[0].equals("PEN")){
-                    currentLineColor = Color.decode(splitStr[1]);
+                switch (splitStr[0]) {
+                    case "PEN":
+                        currentLineColor = Color.decode(splitStr[1]);
 
-                } else if(splitStr[0].equals("FILL")){
-                    if (splitStr[1].equals("OFF")){
-                        currentFillColor = null;
-                    } else {
-                        currentFillColor = Color.decode((splitStr[1]));
-                    }
-
-
-                } else if(splitStr[0].equals("LINE")){
-                    shape.type = "line";
-                    shape.shape.setBounds((int)(Float.parseFloat(splitStr[1]) * AREA_SIZE),(int)(Float.parseFloat(splitStr[2]) * AREA_SIZE),
-                            (int)(Float.parseFloat(splitStr[3]) * AREA_SIZE),(int)(Float.parseFloat(splitStr[4]) *AREA_SIZE));
-                    shapes.add(shape);
+                        break;
+                    case "FILL":
+                        if (splitStr[1].equals("OFF")) {
+                            currentFillColor = null;
+                        } else {
+                            currentFillColor = Color.decode((splitStr[1]));
+                        }
 
 
-                } else if(splitStr[0].equals("PLOT")){
-                    shape.type = "plot";
-                    shape.shape.setBounds((int)(Float.parseFloat(splitStr[1]) * AREA_SIZE),(int)(Float.parseFloat(splitStr[2]) * AREA_SIZE),
-                            1,1);
-                    shapes.add(shape);
-
-                } else if(splitStr[0].equals("RECTANGLE")){
-                    shape.type = "rectangle";
-                    shape.shape.setBounds((int)(Float.parseFloat(splitStr[1]) * AREA_SIZE),(int)(Float.parseFloat(splitStr[2]) * AREA_SIZE),
-                            ((int)(Float.parseFloat(splitStr[3]) * AREA_SIZE)) - ((int)(Float.parseFloat(splitStr[1]) * AREA_SIZE)),
-                            ((int)(Float.parseFloat(splitStr[4]) * AREA_SIZE)) - ((int)(Float.parseFloat(splitStr[2]) * AREA_SIZE)));
-                    shapes.add(shape);
-
-                } else if(splitStr[0].equals("ELLIPSE")){
-                    shape.type = "ellipse";
-                    shape.shape.setBounds((int)(Float.parseFloat(splitStr[1]) * AREA_SIZE),(int)(Float.parseFloat(splitStr[2]) * AREA_SIZE),
-                            ((int)(Float.parseFloat(splitStr[3]) * AREA_SIZE)) - ((int)(Float.parseFloat(splitStr[1]) * AREA_SIZE)),
-                            ((int)(Float.parseFloat(splitStr[4]) * AREA_SIZE)) - ((int)(Float.parseFloat(splitStr[2]) * AREA_SIZE)));
-                    shapes.add(shape);
-
-                } else if(splitStr[0].equals("POLYGON")){
-                    shape.type = "polygon";
-                     int[] PolyX = new int[(splitStr.length -1) / 2];
-                     int[] PolyY = new int[(splitStr.length -1) / 2];
-                    int vertices = 0;
-
-                    for (int i = 1; i < splitStr.length; i += 2){
-                        PolyX[vertices] = ((int)(Float.parseFloat(splitStr[i]) * AREA_SIZE));
-                        PolyY[vertices] = ((int)(Float.parseFloat(splitStr[i+1]) * AREA_SIZE));
-                        vertices ++;
-                    }
-                    Polygon poly = new Polygon(PolyX,PolyY,vertices);
-                    shape.poly = poly;
-                    shapes.add(shape);
+                        break;
+                    case "LINE":
+                        shape.type = "line";
+                        shape.shape.setBounds((int) (Float.parseFloat(splitStr[1]) * AREA_SIZE), (int) (Float.parseFloat(splitStr[2]) * AREA_SIZE),
+                                (int) (Float.parseFloat(splitStr[3]) * AREA_SIZE), (int) (Float.parseFloat(splitStr[4]) * AREA_SIZE));
+                        shapes.add(shape);
 
 
+                        break;
+                    case "PLOT":
+                        shape.type = "plot";
+                        shape.shape.setBounds((int) (Float.parseFloat(splitStr[1]) * AREA_SIZE), (int) (Float.parseFloat(splitStr[2]) * AREA_SIZE),
+                                1, 1);
+                        shapes.add(shape);
 
+                        break;
+                    case "RECTANGLE":
+                        shape.type = "rectangle";
+                        shape.shape.setBounds((int) (Float.parseFloat(splitStr[1]) * AREA_SIZE), (int) (Float.parseFloat(splitStr[2]) * AREA_SIZE),
+                                ((int) (Float.parseFloat(splitStr[3]) * AREA_SIZE)) - ((int) (Float.parseFloat(splitStr[1]) * AREA_SIZE)),
+                                ((int) (Float.parseFloat(splitStr[4]) * AREA_SIZE)) - ((int) (Float.parseFloat(splitStr[2]) * AREA_SIZE)));
+                        shapes.add(shape);
+
+                        break;
+                    case "ELLIPSE":
+                        shape.type = "ellipse";
+                        shape.shape.setBounds((int) (Float.parseFloat(splitStr[1]) * AREA_SIZE), (int) (Float.parseFloat(splitStr[2]) * AREA_SIZE),
+                                ((int) (Float.parseFloat(splitStr[3]) * AREA_SIZE)) - ((int) (Float.parseFloat(splitStr[1]) * AREA_SIZE)),
+                                ((int) (Float.parseFloat(splitStr[4]) * AREA_SIZE)) - ((int) (Float.parseFloat(splitStr[2]) * AREA_SIZE)));
+                        shapes.add(shape);
+
+                        break;
+                    case "POLYGON":
+                        shape.type = "polygon";
+                        int[] PolyX = new int[(splitStr.length - 1) / 2];
+                        int[] PolyY = new int[(splitStr.length - 1) / 2];
+                        int vertices = 0;
+
+                        for (int i = 1; i < splitStr.length; i += 2) {
+                            PolyX[vertices] = ((int) (Float.parseFloat(splitStr[i]) * AREA_SIZE));
+                            PolyY[vertices] = ((int) (Float.parseFloat(splitStr[i + 1]) * AREA_SIZE));
+                            vertices++;
+                        }
+                        Polygon poly = new Polygon(PolyX, PolyY, vertices);
+                        shape.poly = poly;
+                        shapes.add(shape);
+
+
+                        break;
                 }
             }
             return shapes;
@@ -453,7 +449,7 @@ public class GUIMk1 {
          * @param file a VEC file with instructions to draw all shapes
          * @throws IOException
          */
-        public static void ArrayToVec(ArrayList<ColoredRectangle> array, File file) throws IOException{
+        static void ArrayToVec(ArrayList<ColoredRectangle> array, File file) throws IOException{
             FileWriter newFile = new FileWriter(file + ".vec");
             Color currentBorderColor = null;
             Color currentFillColor = null;
@@ -479,44 +475,45 @@ public class GUIMk1 {
                     newFile.write(borderColor+ System.lineSeparator());
                 }
 
-                if (cr.type.equals("plot")){
-                    String plot = "PLOT " + ((float)currentRectangle.x / AREA_SIZE)
-                            + " " + ((float)currentRectangle.y / AREA_SIZE);
-                    newFile.write(plot + System.lineSeparator());
-                }
-
-                else if(cr.type.equals("line")){
-                    String line = "LINE " + ((float)currentRectangle.x / AREA_SIZE)
-                            + " " + ((float)currentRectangle.y  / AREA_SIZE)
-                            + " " + ((float)currentRectangle.width / AREA_SIZE)
-                            + " " + ((float)currentRectangle.height / AREA_SIZE);
-                    newFile.write(line + System.lineSeparator());
-                }
-                else if(cr.type.equals("rectangle")){
-                    String rectangle = "RECTANGLE " + ((float)currentRectangle.x / AREA_SIZE)
-                            + " " + ((float)currentRectangle.y  / AREA_SIZE)
-                            + " " + (((float)currentRectangle.width / AREA_SIZE) + ((float)currentRectangle.x / AREA_SIZE))
-                            + " " + (((float)currentRectangle.height / AREA_SIZE) + ((float)currentRectangle.y  / AREA_SIZE));
-                    newFile.write(rectangle + System.lineSeparator());
-                }
-                else if(cr.type.equals("ellipse")){
-                    String ellipse = "ELLIPSE " + ((float)currentRectangle.x / AREA_SIZE)
-                            + " " + ((float)currentRectangle.y  / AREA_SIZE)
-                            + " " + (((float)currentRectangle.width / AREA_SIZE) + ((float)currentRectangle.x / AREA_SIZE))
-                            + " " + (((float)currentRectangle.height / AREA_SIZE) + ((float)currentRectangle.y  / AREA_SIZE));
-                    newFile.write(ellipse + System.lineSeparator());
-                }
-                else if(cr.type.equals("polygon")){
-                    Polygon currentPoly = cr.poly;
-                    if(currentPoly != null) {
-                        String polygon = "POLYGON";
-                        for (int i = 0; i < currentPoly.xpoints.length; i++) {
-                            String point = " " + ((float)currentPoly.xpoints[i] / AREA_SIZE)
-                                    + " " + ((float)currentPoly.ypoints[i] / AREA_SIZE);
-                            polygon += point;
+                switch (cr.type) {
+                    case "plot":
+                        String plot = "PLOT " + ((float) currentRectangle.x / AREA_SIZE)
+                                + " " + ((float) currentRectangle.y / AREA_SIZE);
+                        newFile.write(plot + System.lineSeparator());
+                        break;
+                    case "line":
+                        String line = "LINE " + ((float) currentRectangle.x / AREA_SIZE)
+                                + " " + ((float) currentRectangle.y / AREA_SIZE)
+                                + " " + ((float) currentRectangle.width / AREA_SIZE)
+                                + " " + ((float) currentRectangle.height / AREA_SIZE);
+                        newFile.write(line + System.lineSeparator());
+                        break;
+                    case "rectangle":
+                        String rectangle = "RECTANGLE " + ((float) currentRectangle.x / AREA_SIZE)
+                                + " " + ((float) currentRectangle.y / AREA_SIZE)
+                                + " " + (((float) currentRectangle.width / AREA_SIZE) + ((float) currentRectangle.x / AREA_SIZE))
+                                + " " + (((float) currentRectangle.height / AREA_SIZE) + ((float) currentRectangle.y / AREA_SIZE));
+                        newFile.write(rectangle + System.lineSeparator());
+                        break;
+                    case "ellipse":
+                        String ellipse = "ELLIPSE " + ((float) currentRectangle.x / AREA_SIZE)
+                                + " " + ((float) currentRectangle.y / AREA_SIZE)
+                                + " " + (((float) currentRectangle.width / AREA_SIZE) + ((float) currentRectangle.x / AREA_SIZE))
+                                + " " + (((float) currentRectangle.height / AREA_SIZE) + ((float) currentRectangle.y / AREA_SIZE));
+                        newFile.write(ellipse + System.lineSeparator());
+                        break;
+                    case "polygon":
+                        Polygon currentPoly = cr.poly;
+                        if (currentPoly != null) {
+                            StringBuilder polygon = new StringBuilder("POLYGON");
+                            for (int i = 0; i < currentPoly.xpoints.length; i++) {
+                                String point = " " + ((float) currentPoly.xpoints[i] / AREA_SIZE)
+                                        + " " + ((float) currentPoly.ypoints[i] / AREA_SIZE);
+                                polygon.append(point);
+                            }
+                            newFile.write(polygon + System.lineSeparator());
                         }
-                        newFile.write(polygon + System.lineSeparator());
-                    }
+                        break;
                 }
 
             }
@@ -560,7 +557,7 @@ public class GUIMk1 {
         private int xDiff;
         private int yDiff;
         private Point sPoint;
-        AffineTransform at = new AffineTransform();
+        final AffineTransform at = new AffineTransform();
 
         /**
          * @param graphic main graphic
@@ -726,7 +723,7 @@ public class GUIMk1 {
              */
             public void mousePressed(MouseEvent e) {
 
-                if(ToolSelect.GetTool() == "zoom/pan"){
+                if(Objects.equals(ToolSelect.GetTool(), "zoom/pan")){
                     released = false;
                     sPoint = MouseInfo.getPointerInfo().getLocation();
                 }else {
@@ -745,7 +742,7 @@ public class GUIMk1 {
              */
             public void mouseDragged(MouseEvent e) {
 
-                if(ToolSelect.GetTool() == "zoom/pan") {
+                if(Objects.equals(ToolSelect.GetTool(), "zoom/pan")) {
                     Point curPoint = e.getLocationOnScreen();
                     xDiff = curPoint.x - sPoint.x;
                     yDiff = curPoint.y - sPoint.y;
@@ -775,7 +772,7 @@ public class GUIMk1 {
              */
             public void mouseReleased(MouseEvent e) {
 
-                if(ToolSelect.GetTool() == "zoom/pan"){
+                if(Objects.equals(ToolSelect.GetTool(), "zoom/pan")){
                     released = true;
                     repaint();
                 }else {
@@ -814,8 +811,7 @@ public class GUIMk1 {
                                 yPoints[i] = PolyY.elementAt(i);
                                 shape.shape.setBounds(xPoints[i], yPoints[i], vertices, vertices);
                             }
-                            Polygon poly = new Polygon(xPoints, yPoints, vertices);
-                            shape.poly = poly;
+                            shape.poly = new Polygon(xPoints, yPoints, vertices);
 
                             PolyX.clear();
                             PolyY.clear();
@@ -838,7 +834,7 @@ public class GUIMk1 {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
 
-                if (ToolSelect.GetTool() == "zoom/pan") {
+                if (Objects.equals(ToolSelect.GetTool(), "zoom/pan")) {
                     zoomer = true;
                     //Zoom in
                     if (e.getWheelRotation() < 0) {
@@ -858,10 +854,10 @@ public class GUIMk1 {
          * a single shape
          */
         static class ColoredRectangle {
-            private Color border;
+            private final Color border;
             private final Rectangle shape;
             private String type;
-            private Color fill;
+            private final Color fill;
             private Polygon poly;
 
 
@@ -880,35 +876,9 @@ public class GUIMk1 {
             }
 
             /**
-             * @return border- the border color
-             */
-            public Color getBorder() {
-                return border;
-            }
-
-            /**
              * @return type- what type of shape it is
              */
             String getType(){ return type;}
-
-            /**
-             * @return fill- the fill color of the shape
-             */
-            public Color getFill(){return fill;}
-
-            /**
-             * @param fill the fill color of the shape
-             */
-            public void setFill(Color fill){
-                this.fill = fill;
-            }
-
-            /**
-             * @param border the border color
-             */
-            public void setBorder(Color border) {
-                this.border = border;
-            }
 
             /**
              * @return The main shape, including its size/ coords etc.
@@ -917,9 +887,6 @@ public class GUIMk1 {
                 return shape;
             }
 
-            Polygon getPoly(){
-                return poly;
-            }
         }
     }
 }
