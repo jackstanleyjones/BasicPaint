@@ -1,4 +1,4 @@
-package Junit.GUIMk1;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
@@ -341,6 +341,8 @@ public class GUIMk1 {
 
         public static void setColoredRectangles(ArrayList<ColoredRectangle> rectangles){
             for (ColoredRectangle cr : rectangles) {
+
+
                 coloredRectangles.add(cr);
             }
         }
