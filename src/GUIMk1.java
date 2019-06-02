@@ -16,6 +16,7 @@ import javax.swing.filechooser.*;
 import java.io.*;
 import java.util.List;
 
+import static javax.swing.KeyStroke.getKeyStroke;
 
 
 public class GUIMk1 {
@@ -37,29 +38,17 @@ public class GUIMk1 {
         DrawingArea drawingArea = new DrawingArea();
         ToolSelect utiltyBar = new ToolSelect(drawingArea);
         MenuBar menuBar = new MenuBar(drawingArea);
+        JTextField textField = new JTextField();
         JFrame.setDefaultLookAndFeelDecorated(true);
         JFrame frame = new JFrame("GUIMk1");
+        frame.addKeyListener(new Keychecker());
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
         frame.setLayout(new BorderLayout());
         frame.getContentPane().add(utiltyBar, BorderLayout.WEST);
         frame.getContentPane().add(menuBar,BorderLayout.NORTH);
         frame.getContentPane().add(drawingArea);
-        frame.addKeyListener(new KeyListener() {
 
-            @Override
-            public void keyTyped(KeyEvent e) { }
 
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if ((e.getKeyCode() == KeyEvent.VK_Z) && ((e.getKeyChar() & KeyEvent.CTRL_DOWN_MASK) != 0)) {
-                    DrawingArea.deleteLastRectangle();
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) { }
-
-        });
         //frame.setSize(400, 400);
         frame.setLocationRelativeTo( null );
         frame.setVisible(true);
@@ -67,6 +56,7 @@ public class GUIMk1 {
         //drawingArea.repaint();
         //frame.dispose();.//
     }
+
 
 
 
@@ -88,6 +78,8 @@ public class GUIMk1 {
         ToolSelect(DrawingArea drawingArea){
             this.drawingArea = drawingArea;
             JToolBar toolbar  = new JToolBar(null, JToolBar.VERTICAL);
+            JLabel penLabel = new JLabel("Pen colour:");
+            JLabel fillLabel = new JLabel("Fill Colour:");
 
             ColorChooserButton borderColorChooser = new ColorChooserButton(Color.WHITE);
             borderColorChooser.addColorChangedListener(this::setBorderColor);
@@ -101,7 +93,9 @@ public class GUIMk1 {
             toolbar.add(makeButton("ellipse"));
             toolbar.add(makeButton("polygon"));
             toolbar.add(makeButton("zoom/pan"));
+            toolbar.add(penLabel);
             toolbar.add(borderColorChooser);
+            toolbar.add(fillLabel);
             toolbar.add(fillColorChooser);
             add(toolbar);
 
@@ -197,6 +191,8 @@ public class GUIMk1 {
 
         }
         public void actionPerformed(ActionEvent e) {
+
+
             String command = e.getActionCommand();
 
             if(command.equals("open")) {
@@ -524,7 +520,6 @@ public class GUIMk1 {
             addMouseListener(ml);
             addMouseMotionListener(ml);
             addMouseWheelListener(ml);
-
 
 
         }
