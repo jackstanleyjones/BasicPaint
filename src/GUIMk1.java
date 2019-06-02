@@ -51,7 +51,7 @@ public class GUIMk1 {
         frame.setVisible(true);
         frame.pack();
         //drawingArea.repaint();
-        //frame.dispose();.//
+        //frame.dispose();
     }
 
 
