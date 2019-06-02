@@ -1,16 +1,10 @@
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.NoninvertibleTransformException;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.event.ActionEvent;
-import java.io.FileFilter;
 import java.util.*;
 import java.awt.event.*;
 import javax.swing.filechooser.*;
@@ -38,26 +32,19 @@ public class GUIMk1 {
     private static void createGUI(){
         DrawingArea drawingArea = new DrawingArea();
         ToolSelect utilityBar = new ToolSelect(drawingArea);
-        JScrollPane scroll = new JScrollPane(drawingArea);
-
-        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
         MenuBar menuBar = new MenuBar(drawingArea);
         //In a container that uses a BorderLayout:
         JFrame.setDefaultLookAndFeelDecorated(true);
         JFrame frame = new JFrame("GUIMk1");
         frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
         frame.setLayout(new BorderLayout());
-        frame.getContentPane().add(scroll,BorderLayout.CENTER);
         frame.getContentPane().add(utilityBar, BorderLayout.WEST);
         frame.getContentPane().add(menuBar,BorderLayout.NORTH);
         frame.getContentPane().add(drawingArea);
-        //frame.setSize(400, 400);
         frame.setLocationRelativeTo( null );
         frame.setVisible(true);
         frame.pack();
-        //drawingArea.repaint();
-        //frame.dispose();
+
     }
 
 
